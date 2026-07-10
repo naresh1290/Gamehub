@@ -38,14 +38,14 @@ $gh_archive = get_post_type_archive_link( 'game' );
 		</div>
 
 		<nav class="gh-nav" aria-label="<?php esc_attr_e( 'Main', 'gamehub' ); ?>">
-			<a class="gh-nav-item<?php echo is_front_page() ? ' is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-				<span class="gh-nav-ico">🏠</span> <?php esc_html_e( 'Home', 'gamehub' ); ?>
+			<a class="gh-nav-item<?php echo is_front_page() ? ' is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php esc_attr_e( 'Home', 'gamehub' ); ?>">
+				<span class="gh-nav-ico">🏠</span><span class="gh-nav-txt"><?php esc_html_e( 'Home', 'gamehub' ); ?></span>
 			</a>
-			<a class="gh-nav-item" href="<?php echo esc_url( add_query_arg( 'sort', 'new', $gh_archive ) ); ?>">
-				<span class="gh-nav-ico">✨</span> <?php esc_html_e( 'New', 'gamehub' ); ?>
+			<a class="gh-nav-item" href="<?php echo esc_url( add_query_arg( 'sort', 'new', $gh_archive ) ); ?>" title="<?php esc_attr_e( 'New', 'gamehub' ); ?>">
+				<span class="gh-nav-ico">✨</span><span class="gh-nav-txt"><?php esc_html_e( 'New', 'gamehub' ); ?></span>
 			</a>
-			<a class="gh-nav-item<?php echo is_post_type_archive( 'game' ) && ! isset( $_GET['sort'] ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_archive ); ?>">
-				<span class="gh-nav-ico">🔥</span> <?php esc_html_e( 'All Games', 'gamehub' ); ?>
+			<a class="gh-nav-item<?php echo is_post_type_archive( 'game' ) && ! isset( $_GET['sort'] ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_archive ); ?>" title="<?php esc_attr_e( 'All Games', 'gamehub' ); ?>">
+				<span class="gh-nav-ico">🔥</span><span class="gh-nav-txt"><?php esc_html_e( 'All Games', 'gamehub' ); ?></span>
 			</a>
 
 			<?php if ( $gh_cats ) : ?>
@@ -53,7 +53,7 @@ $gh_archive = get_post_type_archive_link( 'game' );
 				<div class="gh-nav-label"><?php esc_html_e( 'Categories', 'gamehub' ); ?></div>
 				<?php foreach ( $gh_cats as $gh_cat ) : ?>
 					<?php $gh_link = get_term_link( $gh_cat ); if ( is_wp_error( $gh_link ) ) { continue; } ?>
-					<a class="gh-nav-item gh-nav-cat<?php echo is_tax( 'game_category', $gh_cat->term_id ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_link ); ?>">
+					<a class="gh-nav-item gh-nav-cat<?php echo is_tax( 'game_category', $gh_cat->term_id ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_link ); ?>" title="<?php echo esc_attr( $gh_cat->name ); ?>">
 						<span class="gh-cat-ico"><?php echo esc_html( mb_substr( $gh_cat->name, 0, 1 ) ); ?></span>
 						<span class="gh-nav-cat-name"><?php echo esc_html( $gh_cat->name ); ?></span>
 					</a>

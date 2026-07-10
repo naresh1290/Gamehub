@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.1.0
+Version:     1.2.0
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -26,6 +26,7 @@ Requires PHP: 7.4
 	--gh-radius-sm: 12px;
 	--gh-shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
 	--gh-sidebar-w: 250px;
+	--gh-rail-w: 72px;
 	--gh-maxw: 1400px;
 
 	/* Sidebar keeps a constant dark look in both themes (CrazyGames style). */
@@ -164,16 +165,34 @@ img { max-width: 100%; display: block; }
 .gh-game-head h1 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
 .gh-game-cats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .gh-game-cats a { font-size: 13px; color: var(--gh-muted); background: var(--gh-surface-2); padding: 3px 10px; border-radius: 999px; }
-.gh-player { background: #000; border-radius: var(--gh-radius); overflow: hidden; position: relative; aspect-ratio: 16 / 10; box-shadow: var(--gh-shadow); }
-.gh-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.gh-player-cover { position: absolute; inset: 0; display: grid; place-items: center; cursor: pointer; background-size: cover; background-position: center; }
-.gh-player-cover::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.45); }
-.gh-play-btn { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 10px; background: var(--gh-accent); color: #fff; font-weight: 800; font-size: 18px; padding: 15px 30px; border-radius: 999px; border: 0; cursor: pointer; }
-.gh-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
-.gh-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--gh-surface); border: 1px solid var(--gh-border); color: var(--gh-text); border-radius: 999px; padding: 9px 16px; font-weight: 600; cursor: pointer; font-size: 14px; }
-.gh-btn:hover { background: var(--gh-surface-2); }
-.gh-btn.is-active.gh-like { color: var(--gh-like); border-color: var(--gh-like); }
-.gh-btn.is-active.gh-dislike { color: var(--gh-dislike); border-color: var(--gh-dislike); }
+.gh-player { position: relative; display: flex; flex-direction: column; background: #000; border-radius: var(--gh-radius); overflow: hidden; aspect-ratio: 16 / 9; box-shadow: var(--gh-shadow); }
+.gh-player-stage { position: relative; flex: 1; min-height: 0; }
+.gh-player-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gh-player-launch { position: absolute; inset: 0; display: grid; place-items: center; background-size: cover; background-position: center; cursor: pointer; }
+.gh-player-launch::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.42); }
+.gh-play-btn { position: relative; z-index: 2; width: 76px; height: 76px; border-radius: 50%; background: var(--gh-accent); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); transition: transform .15s; }
+.gh-player-launch:hover .gh-play-btn { transform: scale(1.06); }
+
+.gh-player-bar { flex: 0 0 46px; height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 10px 0 12px; background: #14161d; color: #fff; }
+.gh-pb-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.gh-pb-left img { border-radius: 7px; object-fit: cover; }
+.gh-pb-name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-pb-right { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.gh-pb-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.09); border: 0; color: #fff; border-radius: 9px; padding: 8px 11px; cursor: pointer; font-weight: 700; font-size: 13px; line-height: 1; }
+.gh-pb-btn:hover { background: rgba(255,255,255,.18); }
+.gh-pb-btn.is-active.gh-like { color: var(--gh-like); }
+.gh-pb-btn.is-active.gh-dislike { color: var(--gh-dislike); }
+
+.gh-fs-bar { display: none; flex: 0 0 40px; height: 40px; align-items: center; gap: 12px; background: #000; color: #fff; padding: 0 12px; }
+.gh-fs-close { background: rgba(255,255,255,.14); border: 0; color: #fff; width: 28px; height: 28px; border-radius: 7px; cursor: pointer; font-size: 13px; flex: 0 0 auto; }
+.gh-fs-title { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gh-player.is-immersive { position: fixed; inset: 0; z-index: 9999; width: 100vw; height: 100vh; height: 100dvh; aspect-ratio: auto; border-radius: 0; }
+.gh-player.is-immersive .gh-fs-bar { display: flex; }
+.gh-player.is-immersive .gh-player-bar { display: none; }
+.gh-player.is-immersive .gh-player-launch { display: none; }
+body.gh-noscroll { overflow: hidden; }
+
+.gh-player-meta { display: flex; align-items: center; gap: 16px; margin: 14px 0; flex-wrap: wrap; }
 .gh-rating-static { display: inline-flex; align-items: center; gap: 6px; color: var(--gh-star); font-weight: 700; }
 .gh-rating-note { color: var(--gh-muted); font-weight: 500; font-size: 13px; }
 .gh-game-desc { max-width: 820px; color: var(--gh-text); }
@@ -220,6 +239,17 @@ img { max-width: 100%; display: block; }
 	.gh-grid { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 11px; }
 	.gh-container { padding: 0 14px; }
 }
-@media (min-width: 900px) {
-	.gh-player { aspect-ratio: 16 / 9; }
+/* Desktop: collapsed icon rail that expands on hover, overlaying content. */
+@media (min-width: 1001px) {
+	.gh-sidebar { width: var(--gh-rail-w); white-space: nowrap; transition: width .18s ease; }
+	.gh-shell { margin-left: var(--gh-rail-w); }
+	.gh-sidebar:hover { width: var(--gh-sidebar-w); box-shadow: 8px 0 34px rgba(0,0,0,.5); }
+	.gh-sidebar:not(:hover) .gh-nav-txt,
+	.gh-sidebar:not(:hover) .gh-nav-cat-name,
+	.gh-sidebar:not(:hover) .gh-logo-text,
+	.gh-sidebar:not(:hover) .gh-nav-label,
+	.gh-sidebar:not(:hover) .gh-nav-foot { display: none; }
+	.gh-sidebar:not(:hover) .gh-nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
+	.gh-sidebar:not(:hover) .gh-sidebar-head { justify-content: center; padding-left: 0; padding-right: 0; }
+	.gh-sidebar:not(:hover) .gh-nav-sep { margin: 10px 16px; }
 }

@@ -147,7 +147,7 @@
 		sec.hidden = false;
 	}
 
-	/* ---- Player + session tracking ---- */
+	/* ---- Player: auto-run (desktop/tablet), immersive fullscreen, share ---- */
 	(function player() {
 		var wrap = document.querySelector('.gh-player');
 		if (!wrap) { renderRecent(); return; }
@@ -157,10 +157,11 @@
 		recordRecent();
 		beacon('/games/' + gid + '/visit', {});
 
-		var cover = wrap.querySelector('.gh-player-cover');
+		var stage = wrap.querySelector('.gh-player-stage');
+		var launch = wrap.querySelector('.gh-player-launch');
 		var started = false, sessionStart = 0, buffered = 0;
 
-		function launch() {
+		function inject() {
 			if (started) { return; }
 			started = true;
 			var iframe = document.createElement('iframe');
@@ -168,14 +169,40 @@
 			iframe.title = wrap.getAttribute('data-title') || 'game';
 			iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; clipboard-write; cross-origin-isolated';
 			iframe.allowFullscreen = true;
-			if (cover) { cover.remove(); }
-			wrap.appendChild(iframe);
+			if (launch) { launch.style.display = 'none'; }
+			stage.appendChild(iframe);
 			post('/games/' + gid + '/play', {}).catch(function () {});
 			sessionStart = Date.now();
 		}
-		if (cover) {
-			cover.addEventListener('click', launch);
-			cover.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); launch(); } });
+		function enterImmersive() { inject(); wrap.classList.add('is-immersive'); document.body.classList.add('gh-noscroll'); }
+		function exitImmersive() { wrap.classList.remove('is-immersive'); document.body.classList.remove('gh-noscroll'); }
+
+		// Tablet/desktop: run the game directly. Phones: tap to launch fullscreen.
+		var isDesktop = window.innerWidth >= 768;
+		if (isDesktop) { inject(); }
+		if (launch) {
+			launch.addEventListener('click', function () { inject(); if (!isDesktop) { enterImmersive(); } });
+			launch.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); launch.click(); } });
+		}
+
+		var fsEnter = wrap.querySelector('[data-gh-fs-enter]');
+		if (fsEnter) { fsEnter.addEventListener('click', enterImmersive); }
+		var fsExit = wrap.querySelector('[data-gh-fs-exit]');
+		if (fsExit) { fsExit.addEventListener('click', exitImmersive); }
+		document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { exitImmersive(); } });
+
+		var shareBtn = wrap.querySelector('[data-gh-share]');
+		if (shareBtn) {
+			shareBtn.addEventListener('click', function () {
+				var url = location.href, title = wrap.getAttribute('data-title') || document.title;
+				if (navigator.share) { navigator.share({ title: title, url: url }).catch(function () {}); }
+				else if (navigator.clipboard) {
+					navigator.clipboard.writeText(url).then(function () {
+						shareBtn.classList.add('is-active');
+						setTimeout(function () { shareBtn.classList.remove('is-active'); }, 1200);
+					});
+				}
+			});
 		}
 
 		function accrue() { if (started && sessionStart) { buffered += Math.round((Date.now() - sessionStart) / 1000); sessionStart = 0; } }
