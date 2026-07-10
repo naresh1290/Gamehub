@@ -54,7 +54,7 @@ $gh_archive = get_post_type_archive_link( 'game' );
 				<?php foreach ( $gh_cats as $gh_cat ) : ?>
 					<?php $gh_link = get_term_link( $gh_cat ); if ( is_wp_error( $gh_link ) ) { continue; } ?>
 					<a class="gh-nav-item gh-nav-cat<?php echo is_tax( 'game_category', $gh_cat->term_id ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_link ); ?>" title="<?php echo esc_attr( $gh_cat->name ); ?>">
-						<span class="gh-cat-ico"><?php echo esc_html( mb_substr( $gh_cat->name, 0, 1 ) ); ?></span>
+						<span class="gh-cat-ico"><?php echo gamehub_category_icon( $gh_cat->name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 						<span class="gh-nav-cat-name"><?php echo esc_html( $gh_cat->name ); ?></span>
 					</a>
 				<?php endforeach; ?>
