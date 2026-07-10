@@ -78,6 +78,57 @@ function gamehub_short_num( $n ) {
 }
 
 /**
+ * Render a breadcrumb trail. $items = array of ['name'=>..., 'url'=>...]; the
+ * last item is the current page (no link).
+ *
+ * @param array $items Breadcrumb items.
+ */
+function gamehub_breadcrumbs( $items ) {
+	$items = array_values( array_filter( (array) $items ) );
+	if ( count( $items ) < 2 ) {
+		return;
+	}
+	$last = count( $items ) - 1;
+	echo '<nav class="gh-crumbs" aria-label="' . esc_attr__( 'Breadcrumb', 'gamehub' ) . '"><ol>';
+	foreach ( $items as $i => $it ) {
+		echo '<li>';
+		if ( $i < $last && ! empty( $it['url'] ) ) {
+			echo '<a href="' . esc_url( $it['url'] ) . '">' . esc_html( $it['name'] ) . '</a>';
+		} else {
+			echo '<span aria-current="page">' . esc_html( $it['name'] ) . '</span>';
+		}
+		echo '</li>';
+	}
+	echo '</ol></nav>';
+}
+
+/**
+ * The primary category term for a game (falls back to the first assigned).
+ *
+ * @param int      $post_id Game post ID.
+ * @param WP_Term[] $cats   Already-fetched terms (optional).
+ * @return WP_Term|null
+ */
+function gamehub_primary_term( $post_id, $cats = null ) {
+	if ( null === $cats ) {
+		$cats = get_the_terms( $post_id, 'game_category' );
+		$cats = is_wp_error( $cats ) ? array() : (array) $cats;
+	}
+	if ( empty( $cats ) ) {
+		return null;
+	}
+	$primary_id = (int) get_post_meta( $post_id, '_ghub_primary_category', true );
+	if ( $primary_id ) {
+		foreach ( $cats as $c ) {
+			if ( (int) $c->term_id === $primary_id ) {
+				return $c;
+			}
+		}
+	}
+	return $cats[0];
+}
+
+/**
  * Render an SEO/content section. Accepts raw HTML (already sanitized).
  *
  * @param string $html    Content HTML.

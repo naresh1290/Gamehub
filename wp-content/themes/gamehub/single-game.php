@@ -71,6 +71,17 @@ while ( have_posts() ) :
 	<div class="gh-player-wrap">
 		<div class="gh-container">
 
+			<?php
+			$gh_primary = gamehub_primary_term( get_the_ID(), $cats );
+			gamehub_breadcrumbs(
+				array(
+					array( 'name' => __( 'Home', 'gamehub' ), 'url' => home_url( '/' ) ),
+					$gh_primary ? array( 'name' => $gh_primary->name, 'url' => get_term_link( $gh_primary ) ) : null,
+					array( 'name' => get_the_title() ),
+				)
+			);
+			?>
+
 			<div class="gh-play-top">
 				<div class="gh-play-center">
 					<div class="gh-player"

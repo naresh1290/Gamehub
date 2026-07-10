@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.4.3
+Version:     1.4.4
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -160,6 +160,15 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-card-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; color: var(--gh-muted); font-size: 12px; }
 .gh-card-meta .gh-star { color: var(--gh-star); }
 .gh-badge { position: absolute; top: 8px; left: 8px; background: var(--gh-accent); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+
+/* Breadcrumbs ---------------------------------------------------------- */
+.gh-crumbs { margin: 2px 0 14px; }
+.gh-crumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0; margin: 0; font-size: 13px; }
+.gh-crumbs li { display: flex; align-items: center; gap: 6px; }
+.gh-crumbs li:not(:first-child)::before { content: "›"; color: var(--gh-muted); opacity: .6; }
+.gh-crumbs a { color: var(--gh-muted); }
+.gh-crumbs a:hover { color: var(--gh-accent); }
+.gh-crumbs span { color: var(--gh-text); font-weight: 600; }
 
 /* Player page ---------------------------------------------------------- */
 .gh-player-wrap { padding: 22px 0 40px; }
