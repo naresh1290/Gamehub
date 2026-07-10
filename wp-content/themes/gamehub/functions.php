@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.2.6' );
+define( 'GAMEHUB_THEME_VERSION', '1.2.7' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.
@@ -198,3 +198,6 @@ add_action(
 );
 
 require_once get_template_directory() . '/inc/template-tags.php';
+
+require_once get_template_directory() . '/inc/class-gamehub-seo.php';
+GameHub_SEO::init();
