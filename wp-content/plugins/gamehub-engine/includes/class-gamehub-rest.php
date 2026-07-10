@@ -49,6 +49,16 @@ class GameHub_REST {
 
 		register_rest_route(
 			self::NS,
+			'/list',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => array( $this, 'list_page' ),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/search',
 			array(
 				'methods'             => 'GET',
@@ -156,6 +166,64 @@ class GameHub_REST {
 			$out[] = ghub_get_game( $p );
 		}
 		return rest_ensure_response( $out );
+	}
+
+	/**
+	 * Return a page of game cards as rendered HTML, matching the ordering used
+	 * on the archive/category pages. Powers the "Load more" button so extra
+	 * games load in place without a /page/N/ URL change.
+	 */
+	public function list_page( $req ) {
+		$paged = max( 1, (int) $req->get_param( 'paged' ) );
+		$cat   = (int) $req->get_param( 'category' );
+		$sort  = sanitize_key( (string) $req->get_param( 'sort' ) );
+		$search = trim( (string) $req->get_param( 's' ) );
+
+		$per = (int) ( GameHub_Settings::get()['per_page'] ?? 60 );
+		if ( $per <= 0 ) {
+			$per = 60;
+		}
+
+		$args = array(
+			'post_type'      => 'game',
+			'post_status'    => 'publish',
+			'posts_per_page' => $per,
+			'paged'          => $paged,
+		);
+		if ( '' !== $search ) {
+			$args['s'] = $search;
+		}
+		if ( $cat > 0 ) {
+			$args['tax_query'] = array(
+				array( 'taxonomy' => 'game_category', 'field' => 'term_id', 'terms' => $cat ),
+			);
+		}
+		if ( 'new' === $sort ) {
+			$args['orderby'] = 'date';
+			$args['order']   = 'DESC';
+		} else {
+			$args['ghub_order'] = 'popular';
+		}
+
+		$query = new WP_Query( $args );
+		$html  = '';
+		if ( $query->have_posts() && function_exists( 'gamehub_card' ) ) {
+			ob_start();
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				gamehub_card( get_post() );
+			}
+			$html = ob_get_clean();
+		}
+		wp_reset_postdata();
+
+		return rest_ensure_response(
+			array(
+				'html'     => $html,
+				'page'     => $paged,
+				'has_more' => $paged < (int) $query->max_num_pages,
+			)
+		);
 	}
 
 	/**

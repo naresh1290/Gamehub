@@ -28,17 +28,14 @@ $term = get_queried_object();
 				endwhile;
 				?>
 			</div>
-			<div class="gh-pagination">
 				<?php
-				echo paginate_links(
+				gamehub_load_more_button(
 					array(
-						'mid_size'  => 1,
-						'prev_text' => __( '← Prev', 'gamehub' ),
-						'next_text' => __( 'Next →', 'gamehub' ),
+						'category' => (int) $term->term_id,
+						'sort'     => ( isset( $_GET['sort'] ) && 'new' === sanitize_key( wp_unslash( $_GET['sort'] ) ) ) ? 'new' : '',
 					)
 				);
 				?>
-			</div>
 		<?php else : ?>
 			<p class="gh-empty"><?php esc_html_e( 'No games in this category yet.', 'gamehub' ); ?></p>
 		<?php endif; ?>

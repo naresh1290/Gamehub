@@ -61,6 +61,30 @@ function gamehub_grid( $items ) {
 }
 
 /**
+ * "Load more" button that fetches the next page in place (no /page/N/ URL).
+ * Renders only when there is more than one page. Reads max pages from the
+ * current main query. The button must live in the same container as its grid.
+ *
+ * @param array $atts category (term id), sort ('new'), search (query string).
+ */
+function gamehub_load_more_button( $atts = array() ) {
+	global $wp_query;
+	$max = (int) $wp_query->max_num_pages;
+	if ( $max < 2 ) {
+		return;
+	}
+	$a = wp_parse_args( $atts, array( 'category' => 0, 'sort' => '', 'search' => '' ) );
+	printf(
+		'<div class="gh-loadmore-wrap"><button type="button" class="gh-loadmore" data-gh-loadmore data-category="%d" data-sort="%s" data-search="%s" data-page="1" data-max="%d">%s</button></div>',
+		(int) $a['category'],
+		esc_attr( $a['sort'] ),
+		esc_attr( $a['search'] ),
+		$max,
+		esc_html__( 'Load more games', 'gamehub' )
+	);
+}
+
+/**
  * Compact number formatting (1.2K, 3.4M).
  *
  * @param int $n Number.

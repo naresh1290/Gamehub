@@ -39,17 +39,14 @@ $is_search = is_search();
 				?>
 			</div>
 
-			<div class="gh-pagination">
-				<?php
-				echo paginate_links(
-					array(
-						'mid_size'  => 1,
-						'prev_text' => __( '← Prev', 'gamehub' ),
-						'next_text' => __( 'Next →', 'gamehub' ),
-					)
-				);
-				?>
-			</div>
+			<?php
+			gamehub_load_more_button(
+				array(
+					'sort'   => ( isset( $_GET['sort'] ) && 'new' === sanitize_key( wp_unslash( $_GET['sort'] ) ) ) ? 'new' : '',
+					'search' => $is_search ? get_search_query() : '',
+				)
+			);
+			?>
 		<?php else : ?>
 			<p class="gh-empty"><?php esc_html_e( 'No games found.', 'gamehub' ); ?></p>
 		<?php endif; ?>

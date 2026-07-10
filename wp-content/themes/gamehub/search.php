@@ -30,9 +30,7 @@ get_header();
 				endwhile;
 				?>
 			</div>
-			<div class="gh-pagination">
-				<?php echo paginate_links( array( 'mid_size' => 1, 'prev_text' => __( '← Prev', 'gamehub' ), 'next_text' => __( 'Next →', 'gamehub' ) ) ); ?>
-			</div>
+			<?php gamehub_load_more_button( array( 'search' => get_search_query() ) ); ?>
 		<?php else : ?>
 			<p class="gh-empty"><?php esc_html_e( 'No games matched your search.', 'gamehub' ); ?></p>
 		<?php endif; ?>

@@ -306,4 +306,41 @@
 		each(likeBtns, function (b) { b.addEventListener('click', function () { cast('like'); }); });
 		each(dislikeBtns, function (b) { b.addEventListener('click', function () { cast('dislike'); }); });
 	})();
+
+	/* Load more: fetch the next page in place, URL stays the same ---------- */
+	(function () {
+		function bind(btn) {
+			var wrap = btn.closest('.gh-loadmore-wrap');
+			var grid = wrap ? wrap.parentNode.querySelector('.gh-grid') : null;
+			if (!grid) { return; }
+			var busy = false;
+			btn.addEventListener('click', function () {
+				if (busy) { return; }
+				busy = true;
+				btn.classList.add('is-loading');
+				var next = (parseInt(btn.getAttribute('data-page'), 10) || 1) + 1;
+				var q = '?paged=' + next;
+				var cat = parseInt(btn.getAttribute('data-category'), 10) || 0;
+				var sort = btn.getAttribute('data-sort') || '';
+				var search = btn.getAttribute('data-search') || '';
+				if (cat) { q += '&category=' + cat; }
+				if (sort) { q += '&sort=' + encodeURIComponent(sort); }
+				if (search) { q += '&s=' + encodeURIComponent(search); }
+				fetch(REST + '/list' + q, { credentials: 'same-origin' })
+					.then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+					.then(function (res) {
+						if (res.html) {
+							var tmp = document.createElement('div');
+							tmp.innerHTML = res.html;
+							while (tmp.firstChild) { grid.appendChild(tmp.firstChild); }
+						}
+						btn.setAttribute('data-page', String(res.page || next));
+						if (!res.has_more && wrap && wrap.parentNode) { wrap.parentNode.removeChild(wrap); }
+					})
+					.catch(function () {})
+					.then(function () { busy = false; btn.classList.remove('is-loading'); });
+			});
+		}
+		Array.prototype.forEach.call(document.querySelectorAll('[data-gh-loadmore]'), bind);
+	})();
 })();
