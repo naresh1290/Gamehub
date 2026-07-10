@@ -12,10 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Meta keys used on the `game` post type.
  */
-const GHUB_META_SOURCE_ID = '_ghub_source_id';
-const GHUB_META_IFRAME    = '_ghub_iframe_url';
-const GHUB_META_ICON      = '_ghub_icon_url';
-const GHUB_META_FLAGS     = '_ghub_flags';
+const GHUB_META_SOURCE_ID   = '_ghub_source_id';
+const GHUB_META_IFRAME      = '_ghub_iframe_url';
+const GHUB_META_ICON        = '_ghub_icon_url';
+const GHUB_META_FLAGS       = '_ghub_flags';
+const GHUB_META_PRIMARY_CAT = '_ghub_primary_category';
 
 /**
  * Pick the first non-empty value from $data for any of the candidate $keys.
@@ -364,7 +365,19 @@ function ghub_get_game( $post ) {
 	$iframe    = get_post_meta( $post->ID, GHUB_META_IFRAME, true );
 	$thumb     = get_the_post_thumbnail_url( $post->ID, 'large' );
 	$icon_src  = $icon ? $icon : ( $thumb ? $thumb : '' );
-	$terms     = wp_get_post_terms( $post->ID, 'game_category', array( 'fields' => 'names' ) );
+	// Categories, ordered with the primary category first.
+	$term_objs = wp_get_post_terms( $post->ID, 'game_category' );
+	$term_objs = is_wp_error( $term_objs ) ? array() : $term_objs;
+	$primary_id = (int) get_post_meta( $post->ID, GHUB_META_PRIMARY_CAT, true );
+	if ( $primary_id ) {
+		usort(
+			$term_objs,
+			static function ( $a, $b ) use ( $primary_id ) {
+				return ( (int) $b->term_id === $primary_id ) - ( (int) $a->term_id === $primary_id );
+			}
+		);
+	}
+	$terms = wp_list_pluck( $term_objs, 'name' );
 	// Rating is derived from likes vs dislikes — no separate rating input.
 	$likes     = (int) $stats['likes'];
 	$dislikes  = (int) $stats['dislikes'];
@@ -382,7 +395,8 @@ function ghub_get_game( $post ) {
 		'raw_iframe_url'  => $iframe,
 		'icon'            => ghub_proxy_icon_url( $icon_src ),
 		'raw_icon'        => $icon_src,
-		'categories'      => is_wp_error( $terms ) ? array() : $terms,
+		'categories'      => $terms,
+		'primary_category' => $terms ? $terms[0] : '',
 		'plays'           => (int) $stats['plays'],
 		'visits'          => (int) $stats['visits'],
 		'likes'           => $likes,

@@ -359,6 +359,10 @@ class GameHub_Importer {
 			}
 			if ( $term_ids ) {
 				wp_set_object_terms( $post_id, $term_ids, 'game_category', false );
+				// The feed's first category is the primary one (unless already set).
+				if ( ! get_post_meta( $post_id, GHUB_META_PRIMARY_CAT, true ) ) {
+					update_post_meta( $post_id, GHUB_META_PRIMARY_CAT, (int) $term_ids[0] );
+				}
 			}
 		}
 

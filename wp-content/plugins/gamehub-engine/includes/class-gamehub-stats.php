@@ -324,6 +324,30 @@ class GameHub_Stats {
 	}
 
 	/**
+	 * Directly set lifetime counters (admin override).
+	 *
+	 * @param int   $post_id Game post ID.
+	 * @param array $data    Map of column => value (plays|visits|likes|dislikes|session_seconds|session_count).
+	 */
+	public static function set_counters( $post_id, $data ) {
+		self::ensure_row( $post_id );
+		$allowed = array( 'plays', 'visits', 'likes', 'dislikes', 'session_seconds', 'session_count' );
+		$set     = array();
+		foreach ( $allowed as $col ) {
+			if ( array_key_exists( $col, $data ) ) {
+				$set[ $col ] = max( 0, (int) $data[ $col ] );
+			}
+		}
+		if ( empty( $set ) ) {
+			return;
+		}
+		$set['updated_at'] = current_time( 'mysql' );
+
+		global $wpdb;
+		$wpdb->update( self::stats_table(), $set, array( 'post_id' => (int) $post_id ) );
+	}
+
+	/**
 	 * The recorded vote row for a (game, voter) pair.
 	 *
 	 * @param int    $post_id    Game post ID.
