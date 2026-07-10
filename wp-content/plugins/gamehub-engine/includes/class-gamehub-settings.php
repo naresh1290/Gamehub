@@ -46,8 +46,9 @@ class GameHub_Settings {
 			// Playable proxy (blank = embed URLs directly, no proxying).
 			'proxy_origin'    => '',
 			// Icon image reverse proxy (serve CDN icons via this domain).
+			// icon_cdn_host is per-site — set it to the CDN your feed's icons live on.
 			'icon_proxy'      => 0,
-			'icon_cdn_host'   => 'img.poki-cdn.com',
+			'icon_cdn_host'   => '',
 			'icon_proxy_path' => 'img',
 			// Branding.
 			'site_tagline'    => '',
@@ -129,7 +130,7 @@ class GameHub_Settings {
 		$host                   = strtolower( trim( (string) ( $input['icon_cdn_host'] ?? '' ) ) );
 		$host                   = preg_replace( '#^https?://#', '', $host );
 		$host                   = trim( (string) preg_replace( '#/.*$#', '', $host ) );
-		$out['icon_cdn_host']   = preg_match( '/^[a-z0-9.-]+$/', $host ) ? $host : 'img.poki-cdn.com';
+		$out['icon_cdn_host']   = preg_match( '/^[a-z0-9.-]+$/', $host ) ? $host : '';
 		$out['icon_proxy_path'] = trim( sanitize_title( $input['icon_proxy_path'] ?? 'img' ) ) ?: 'img';
 
 		$out['github_repo']           = sanitize_text_field( trim( (string) ( $input['github_repo'] ?? '' ) ) );

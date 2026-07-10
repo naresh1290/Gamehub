@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.3.0
+Version:     1.3.1
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -210,6 +210,11 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-player { position: relative; display: flex; flex-direction: column; background: #000; border-radius: var(--gh-radius); overflow: hidden; aspect-ratio: 16 / 9; box-shadow: var(--gh-shadow); }
 .gh-player-stage { position: relative; flex: 1; min-height: 0; }
 .gh-player-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gh-player-loader { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: #0b0d12; }
+.gh-loader-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.gh-loader-icon { width: 84px; height: 84px; border-radius: 18px; object-fit: cover; box-shadow: 0 10px 34px rgba(0,0,0,.55); }
+.gh-spinner { width: 38px; height: 38px; border-radius: 50%; border: 4px solid rgba(255,255,255,.16); border-top-color: var(--gh-accent); animation: gh-spin .8s linear infinite; }
+@keyframes gh-spin { to { transform: rotate(360deg); } }
 .gh-player-launch { position: absolute; inset: 0; display: grid; place-items: center; background-size: cover; background-position: center; cursor: pointer; }
 .gh-player-launch::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.42); }
 .gh-play-btn { position: relative; z-index: 2; width: 76px; height: 76px; border-radius: 50%; background: var(--gh-accent); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); transition: transform .15s; }

@@ -166,11 +166,24 @@
 		function inject() {
 			if (started) { return; }
 			started = true;
+
+			// Loading screen shown until the game iframe finishes loading.
+			var icon = wrap.getAttribute('data-icon');
+			var loader = document.createElement('div');
+			loader.className = 'gh-player-loader';
+			loader.innerHTML = '<div class="gh-loader-inner">' +
+				(icon ? '<img class="gh-loader-icon" src="' + esc(icon) + '" alt="">' : '') +
+				'<span class="gh-spinner"></span></div>';
+			stage.appendChild(loader);
+			function hideLoader() { if (loader && loader.parentNode) { loader.parentNode.removeChild(loader); } }
+
 			var iframe = document.createElement('iframe');
 			iframe.src = wrap.getAttribute('data-iframe');
 			iframe.title = wrap.getAttribute('data-title') || 'game';
 			iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; clipboard-write; cross-origin-isolated';
 			iframe.allowFullscreen = true;
+			iframe.addEventListener('load', hideLoader);
+			setTimeout(hideLoader, 25000); // safety net if 'load' never fires
 			if (launch) { launch.style.display = 'none'; }
 			stage.appendChild(iframe);
 			post('/games/' + gid + '/play', {}).catch(function () {});
