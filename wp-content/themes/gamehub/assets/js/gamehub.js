@@ -133,13 +133,13 @@
 		var list = lsGet('gh-recent') || [];
 		list = list.filter(function (x) { return x.url !== entry.url; });
 		list.unshift(entry);
-		lsSet('gh-recent', list.slice(0, 12));
+		lsSet('gh-recent', list.slice(0, 20));
 	}
 	function renderRecent() {
 		var sec = document.querySelector('[data-gh-recent]');
 		var grid = document.querySelector('[data-gh-recent-grid]');
 		if (!sec || !grid) { return; }
-		var list = (lsGet('gh-recent') || []).slice(0, 12);
+		var list = (lsGet('gh-recent') || []).slice(0, 20);
 		if (!list.length) { return; }
 		grid.innerHTML = list.map(function (g) {
 			var thumb = g.icon ? '<img src="' + esc(g.icon) + '" alt="" loading="lazy">' : '';

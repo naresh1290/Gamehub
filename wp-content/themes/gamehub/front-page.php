@@ -16,7 +16,7 @@ get_header();
 <section class="gh-section" data-gh-recent hidden>
 	<div class="gh-container">
 		<div class="gh-section-head"><h2><?php esc_html_e( 'Recently played', 'gamehub' ); ?></h2></div>
-		<div class="gh-grid" data-gh-recent-grid></div>
+		<div class="gh-hscroll" data-gh-recent-grid></div>
 	</div>
 </section>
 

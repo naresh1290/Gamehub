@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.2.7
+Version:     1.2.8
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -152,6 +152,17 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-section-head a { color: var(--gh-accent); font-weight: 600; font-size: 14px; }
 
 .gh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); gap: 18px; }
+
+/* Horizontal scroller (Recently played) — small icons, single row. */
+.gh-hscroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--gh-border) transparent; }
+.gh-hscroll::-webkit-scrollbar { height: 8px; }
+.gh-hscroll::-webkit-scrollbar-thumb { background: var(--gh-border); border-radius: 8px; }
+.gh-hscroll .gh-card { flex: 0 0 104px; scroll-snap-align: start; }
+.gh-hscroll .gh-card-body { padding: 6px 8px 8px; }
+.gh-hscroll .gh-card-title { font-size: 12px; }
+.gh-hscroll .gh-card-meta { display: none; }
+@media (max-width: 640px) { .gh-hscroll .gh-card { flex-basis: 88px; } }
+
 .gh-card { background: var(--gh-surface); border: 1px solid var(--gh-border); border-radius: var(--gh-radius); overflow: hidden; box-shadow: var(--gh-shadow); transition: transform .16s, box-shadow .16s; }
 .gh-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0,0,0,.35); }
 .gh-card-thumb { aspect-ratio: 1 / 1; background: var(--gh-surface-2); position: relative; }
