@@ -24,6 +24,72 @@ class GameHub_CPT {
 		add_action( 'init', array( $this, 'register' ) );
 		// Keep pretty archives; make sure the archive is orderable/filterable.
 		add_action( 'pre_get_posts', array( $this, 'adjust_archives' ) );
+
+		// Edit games with the Classic Editor (not the block editor).
+		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
+
+		// Rich (Classic) editor for the category description.
+		add_action( 'game_category_add_form_fields', array( $this, 'term_editor_add' ) );
+		add_action( 'game_category_edit_form_fields', array( $this, 'term_editor_edit' ), 10, 1 );
+		add_action( 'admin_head-edit-tags.php', array( $this, 'term_editor_hide_default' ) );
+		add_action( 'admin_head-term.php', array( $this, 'term_editor_hide_default' ) );
+	}
+
+	/**
+	 * Use the Classic Editor for the game post type.
+	 */
+	public function disable_block_editor( $use, $post_type ) {
+		return 'game' === $post_type ? false : $use;
+	}
+
+	/**
+	 * Rich description editor on the "Add Category" form.
+	 */
+	public function term_editor_add() {
+		?>
+		<div class="form-field ghub-term-editor">
+			<label><?php esc_html_e( 'Description', 'gamehub-engine' ); ?></label>
+			<?php
+			wp_editor(
+				'',
+				'ghub_term_desc_add',
+				array( 'textarea_name' => 'description', 'textarea_rows' => 6, 'media_buttons' => true, 'tinymce' => true, 'quicktags' => true )
+			);
+			?>
+			<p><?php esc_html_e( 'Shown in the content section on the category page.', 'gamehub-engine' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Rich description editor on the "Edit Category" form.
+	 */
+	public function term_editor_edit( $term ) {
+		?>
+		<tr class="form-field ghub-term-editor">
+			<th scope="row"><label><?php esc_html_e( 'Description', 'gamehub-engine' ); ?></label></th>
+			<td>
+				<?php
+				wp_editor(
+					(string) $term->description,
+					'ghub_term_desc',
+					array( 'textarea_name' => 'description', 'textarea_rows' => 8, 'media_buttons' => true, 'tinymce' => true, 'quicktags' => true )
+				);
+				?>
+				<p class="description"><?php esc_html_e( 'Shown in the content section on the category page.', 'gamehub-engine' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Hide the default plain-text description field on game_category screens.
+	 */
+	public function term_editor_hide_default() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && 'game_category' === $screen->taxonomy ) {
+			echo '<style>.term-description-wrap{display:none;}</style>';
+		}
 	}
 
 	/**

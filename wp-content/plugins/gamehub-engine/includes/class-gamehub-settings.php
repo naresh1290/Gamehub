@@ -281,8 +281,20 @@ class GameHub_Settings {
 					<tr>
 						<th scope="row"><label for="ghub_home_content"><?php esc_html_e( 'Homepage content', 'gamehub-engine' ); ?></label></th>
 						<td>
-							<textarea id="ghub_home_content" name="<?php echo esc_attr( self::OPTION ); ?>[homepage_content]" rows="6" class="large-text"><?php echo esc_textarea( $s['homepage_content'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'SEO / intro text shown in the content section at the bottom of the homepage. Basic HTML allowed.', 'gamehub-engine' ); ?></p>
+							<?php
+							wp_editor(
+								$s['homepage_content'],
+								'ghub_home_content',
+								array(
+									'textarea_name' => self::OPTION . '[homepage_content]',
+									'textarea_rows' => 12,
+									'media_buttons' => true,
+									'tinymce'       => true,
+									'quicktags'     => true,
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Shown in the content section at the bottom of the homepage. Start with an H1 (this is the homepage heading).', 'gamehub-engine' ); ?></p>
 						</td>
 					</tr>
 					<tr>
