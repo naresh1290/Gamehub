@@ -28,6 +28,11 @@ class GameHub_CPT {
 		// Edit games with the Classic Editor (not the block editor).
 		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
 
+		// Allow rich HTML (headings, paragraphs, lists) in category descriptions —
+		// WordPress strips these by default via wp_filter_kses on pre_term_description.
+		remove_filter( 'pre_term_description', 'wp_filter_kses' );
+		add_filter( 'pre_term_description', 'wp_kses_post' );
+
 		// Rich (Classic) editor for the category description.
 		add_action( 'game_category_add_form_fields', array( $this, 'term_editor_add' ) );
 		add_action( 'game_category_edit_form_fields', array( $this, 'term_editor_edit' ), 10, 1 );
