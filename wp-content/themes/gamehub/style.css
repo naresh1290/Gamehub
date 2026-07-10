@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.3.2
+Version:     1.3.3
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -36,22 +36,8 @@ Requires PHP: 7.4
 	--gh-side-hover: #1e222b;
 	--gh-side-active: #2a2140;
 }
-:root[data-theme="light"] {
-	--gh-bg: #f3f4f7;
-	--gh-surface: #ffffff;
-	--gh-surface-2: #eef0f4;
-	--gh-text: #14161a;
-	--gh-muted: #5b6470;
-	--gh-border: #e3e6eb;
-	--gh-accent: #6c2bd9;
-	--gh-shadow: 0 1px 2px rgba(16,18,22,.06), 0 8px 24px rgba(16,18,22,.08);
-}
-@media (prefers-color-scheme: light) {
-	:root:not([data-theme="dark"]) {
-		--gh-bg: #f3f4f7; --gh-surface: #ffffff; --gh-surface-2: #eef0f4;
-		--gh-text: #14161a; --gh-muted: #5b6470; --gh-border: #e3e6eb; --gh-accent: #6c2bd9;
-	}
-}
+/* The site is dark by default and ignores the browser's color-scheme. */
+:root { color-scheme: dark; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
