@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.3.4
+Version:     1.3.5
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -226,6 +226,16 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-player.is-immersive .gh-player-bar { display: none; }
 .gh-player.is-immersive .gh-player-launch { display: none; }
 body.gh-noscroll { overflow: hidden; }
+
+/* Confirm-before-close dialog (shown over the fullscreen game). */
+.gh-confirm { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); padding: 20px; }
+.gh-confirm-box { background: var(--gh-surface); border: 1px solid var(--gh-border); border-radius: 16px; padding: 22px 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: var(--gh-shadow); }
+.gh-confirm-title { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: var(--gh-text); }
+.gh-confirm-sub { margin: 0 0 18px; color: var(--gh-muted); font-size: 14px; }
+.gh-confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.gh-confirm-actions button { border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 700; cursor: pointer; font-size: 14px; }
+.gh-confirm-keep { background: var(--gh-surface-2); color: var(--gh-text); }
+.gh-confirm-close { background: var(--gh-dislike); color: #fff; }
 
 .gh-player-meta { display: flex; align-items: center; gap: 16px; margin: 14px 0; flex-wrap: wrap; }
 .gh-rating-static { display: inline-flex; align-items: center; gap: 6px; color: var(--gh-star); font-weight: 700; }

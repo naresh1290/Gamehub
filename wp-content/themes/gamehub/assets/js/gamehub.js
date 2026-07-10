@@ -209,6 +209,29 @@
 			buffered = 0;
 		}
 
+		// Ask before closing a game that's running in fullscreen.
+		var confirmEl = null;
+		function hideConfirm() { if (confirmEl) { confirmEl.style.display = 'none'; } }
+		function requestExit() {
+			if (!wrap.classList.contains('is-immersive')) { exitImmersive(); return; }
+			if (!confirmEl) {
+				confirmEl = document.createElement('div');
+				confirmEl.className = 'gh-confirm';
+				confirmEl.innerHTML = '<div class="gh-confirm-box">' +
+					'<p class="gh-confirm-title">Close the game?</p>' +
+					'<p class="gh-confirm-sub">Your progress may not be saved.</p>' +
+					'<div class="gh-confirm-actions">' +
+					'<button type="button" class="gh-confirm-keep">Keep playing</button>' +
+					'<button type="button" class="gh-confirm-close">Close</button>' +
+					'</div></div>';
+				wrap.appendChild(confirmEl);
+				confirmEl.addEventListener('click', function (e) { if (e.target === confirmEl) { hideConfirm(); } });
+				confirmEl.querySelector('.gh-confirm-keep').addEventListener('click', hideConfirm);
+				confirmEl.querySelector('.gh-confirm-close').addEventListener('click', function () { hideConfirm(); exitImmersive(); });
+			}
+			confirmEl.style.display = 'grid';
+		}
+
 		// Tablet/desktop: run the game directly. Phones: tap to launch fullscreen.
 		var isDesktop = window.innerWidth >= 768;
 		if (isDesktop) { inject(); }
@@ -220,8 +243,12 @@
 		var fsEnter = wrap.querySelector('[data-gh-fs-enter]');
 		if (fsEnter) { fsEnter.addEventListener('click', enterImmersive); }
 		var fsExit = wrap.querySelector('[data-gh-fs-exit]');
-		if (fsExit) { fsExit.addEventListener('click', exitImmersive); }
-		document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { exitImmersive(); } });
+		if (fsExit) { fsExit.addEventListener('click', requestExit); }
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape') { return; }
+			if (confirmEl && confirmEl.style.display !== 'none') { hideConfirm(); return; }
+			requestExit();
+		});
 
 		var shareBtn = wrap.querySelector('[data-gh-share]');
 		if (shareBtn) {
