@@ -32,25 +32,22 @@ while ( have_posts() ) :
 	<div class="gh-player-wrap">
 		<div class="gh-container">
 			<?php
-			// Games for the side rails around the (reduced) player — desktop only.
-			$rail_games = get_posts(
+			// 30 games surrounding the frame: 10 left, 10 right, 10 below.
+			$around = get_posts(
 				array(
 					'post_type'      => 'game',
 					'post_status'    => 'publish',
-					'posts_per_page' => 16,
+					'posts_per_page' => 30,
 					'post__not_in'   => array( get_the_ID() ),
 					'orderby'        => 'rand',
 					'no_found_rows'  => true,
 				)
 			);
-			$rail_left  = array_slice( $rail_games, 0, 8 );
-			$rail_right = array_slice( $rail_games, 8, 8 );
+			$s_left  = array_slice( $around, 0, 10 );
+			$s_right = array_slice( $around, 10, 10 );
+			$s_below = array_slice( $around, 20, 10 );
 			?>
-			<div class="gh-play-layout">
-				<aside class="gh-play-rail" aria-hidden="true">
-					<?php foreach ( $rail_left as $rg ) { gamehub_card( $rg ); } ?>
-				</aside>
-
+			<div class="gh-play-top">
 				<div class="gh-play-center">
 					<div class="gh-player"
 						data-game-id="<?php echo (int) $game['id']; ?>"
@@ -121,39 +118,25 @@ while ( have_posts() ) :
 					</div>
 				</div>
 
-				<aside class="gh-play-rail" aria-hidden="true">
-					<?php foreach ( $rail_right as $rg ) { gamehub_card( $rg ); } ?>
-				</aside>
+				<div class="gh-side gh-side-left" aria-hidden="true">
+					<?php foreach ( $s_left as $rg ) { gamehub_card( $rg ); } ?>
+				</div>
+				<div class="gh-side gh-side-right" aria-hidden="true">
+					<?php foreach ( $s_right as $rg ) { gamehub_card( $rg ); } ?>
+				</div>
 			</div>
 
-			<?php
-			// Related games from the same categories.
-			if ( $cats ) :
-				$term_ids = wp_list_pluck( $cats, 'term_id' );
-				$related  = new WP_Query(
-					array(
-						'post_type'      => 'game',
-						'posts_per_page' => 14,
-						'post__not_in'   => array( get_the_ID() ),
-						'orderby'        => 'rand',
-						'no_found_rows'  => true,
-						'tax_query'      => array(
-							array( 'taxonomy' => 'game_category', 'field' => 'term_id', 'terms' => $term_ids ),
-						),
-					)
-				);
-				if ( $related->have_posts() ) :
-					?>
-					<section class="gh-section">
-						<div class="gh-section-head"><h2><?php esc_html_e( 'More like this', 'gamehub' ); ?></h2></div>
-						<?php gamehub_grid( $related ); ?>
-					</section>
-					<?php
-					wp_reset_postdata();
-				endif;
-			endif;
+			<?php if ( $s_below ) : ?>
+				<section class="gh-section">
+					<div class="gh-section-head"><h2><?php esc_html_e( 'More games', 'gamehub' ); ?></h2></div>
+					<div class="gh-grid">
+						<?php foreach ( $s_below as $rg ) { gamehub_card( $rg ); } ?>
+					</div>
+				</section>
+			<?php endif; ?>
 
-			// Content box below "More like this".
+			<?php
+			// Content box below "More games".
 			$content = get_the_content();
 			if ( trim( wp_strip_all_tags( $content ) ) ) :
 				?>

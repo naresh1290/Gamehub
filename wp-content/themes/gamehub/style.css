@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.2.1
+Version:     1.2.2
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -128,8 +128,8 @@ img { max-width: 100%; display: block; }
 .gh-search-row:hover, .gh-search-row.is-active { background: var(--gh-surface-2); }
 .gh-search-row img, .gh-search-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--gh-surface-2); flex: 0 0 auto; }
 .gh-search-thumb { display: grid; place-items: center; font-weight: 800; color: var(--gh-accent); }
-.gh-search-row-name { font-weight: 600; font-size: 15px; }
-.gh-search-row-sub { color: var(--gh-muted); font-size: 12px; }
+.gh-search-row-name { font-weight: 600; font-size: 15px; display: block; }
+.gh-search-row-sub { color: var(--gh-muted); font-size: 12px; display: block; margin-top: 1px; }
 .gh-search-empty { padding: 18px 16px; color: var(--gh-muted); }
 
 /* Main / container ----------------------------------------------------- */
@@ -160,15 +160,23 @@ img { max-width: 100%; display: block; }
 
 /* Player page ---------------------------------------------------------- */
 .gh-player-wrap { padding: 22px 0 40px; }
-.gh-play-layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+/* Player surrounded by game tiles, fully responsive (no blank space).
+   Mobile: player on top, tiles flow below. Desktop: tiles flank the player. */
+.gh-play-top { display: grid; grid-template-columns: 1fr; gap: 14px; }
 .gh-play-center { width: 100%; max-width: 960px; margin: 0 auto; min-width: 0; }
-.gh-play-rail { display: none; }
-@media (min-width: 1220px) {
-	.gh-play-layout { grid-template-columns: 188px minmax(0, 900px) 188px; justify-content: center; }
-	.gh-play-center { max-width: none; margin: 0; }
-	.gh-play-rail { display: grid; grid-template-columns: 1fr; gap: 12px; align-content: start; }
-	.gh-play-rail .gh-card-body { padding: 7px 9px 9px; }
-	.gh-play-rail .gh-card-title { font-size: 12.5px; }
+.gh-side { display: grid; grid-template-columns: repeat(auto-fill, minmax(94px, 1fr)); gap: 10px; align-content: start; }
+.gh-side .gh-card-body { padding: 6px 8px 8px; }
+.gh-side .gh-card-title { font-size: 12px; }
+.gh-side .gh-card-meta { display: none; }
+@media (min-width: 980px) {
+	.gh-play-top {
+		grid-template-columns: minmax(108px, 1fr) minmax(0, 900px) minmax(108px, 1fr);
+		grid-template-areas: "left center right";
+		align-items: start;
+	}
+	.gh-play-center { grid-area: center; max-width: none; margin: 0; }
+	.gh-side-left { grid-area: left; }
+	.gh-side-right { grid-area: right; }
 }
 .gh-game-head { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .gh-game-head img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; }
