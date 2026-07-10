@@ -291,9 +291,10 @@ class GameHub_Settings {
 							<p class="description">
 								<?php
 								printf(
-									/* translators: example title */
-									esc_html__( 'Appended to every game and category page title. e.g. a game becomes %s. Include your own separator.', 'gamehub-engine' ),
-									'<code>' . esc_html__( 'Subway Surfers - Play Free Online', 'gamehub-engine' ) . '</code>'
+									/* translators: 1: example title, 2: placeholder */
+									esc_html__( 'Appended to every game and category page title. e.g. a game becomes %1$s. Use %2$s for the live site title so it stays in sync.', 'gamehub-engine' ),
+									'<code>' . esc_html__( 'Subway Surfers - Play Free on %site%', 'gamehub-engine' ) . '</code>',
+									'<code>%site%</code>'
 								);
 								?>
 							</p>

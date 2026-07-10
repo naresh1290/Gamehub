@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.2.9' );
+define( 'GAMEHUB_THEME_VERSION', '1.3.0' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.
@@ -79,6 +79,12 @@ add_filter(
 			$suffix  = (string) ( $s['meta_suffix'] ?? '' );
 			$tagline = ! empty( $s['site_tagline'] ) ? $s['site_tagline'] : $tagline;
 		}
+		// Placeholders keep the suffix dynamic if the site title/tagline change.
+		$suffix = str_replace(
+			array( '%site%', '%sitetitle%', '%tagline%' ),
+			array( $site, $site, $tagline ),
+			$suffix
+		);
 
 		if ( is_front_page() ) {
 			return $tagline ? ( $site . ' - ' . $tagline ) : $site;
