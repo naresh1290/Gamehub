@@ -1,0 +1,4 @@
+.ghub-settings h2.title { margin-top: 28px; padding-top: 12px; border-top: 1px solid #dcdcde; }
+.ghub-settings .form-table code { background: #f6f7f7; padding: 2px 6px; border-radius: 4px; }
+.ghub-settings input[type="url"].large-text,
+.ghub-settings input[type="text"].large-text { max-width: 720px; }

@@ -1,0 +1,27 @@
+.ghub-analytics .ghub-daterange { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 16px 0 20px; }
+.ghub-analytics .ghub-daterange form { display: flex; align-items: center; gap: 10px; }
+.ghub-analytics .ghub-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.ghub-analytics .ghub-preset { padding: 5px 12px; border: 1px solid #c3c4c7; border-radius: 999px; background: #fff; text-decoration: none; font-size: 13px; }
+.ghub-analytics .ghub-preset:hover { background: #f0f0f1; }
+
+.ghub-scorecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.ghub-scorecard { background: #fff; border: 1px solid #dcdcde; border-radius: 10px; padding: 14px 16px; }
+.ghub-sc-label { color: #646970; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.ghub-sc-value { font-size: 28px; font-weight: 700; line-height: 1.2; margin: 4px 0 2px; }
+.ghub-sc-sub { color: #787c82; font-size: 12px; }
+
+.ghub-panel { background: #fff; border: 1px solid #dcdcde; border-radius: 10px; padding: 16px 18px; margin-bottom: 22px; }
+.ghub-panel-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ghub-panel-head h2 { margin: 0; font-size: 16px; }
+.ghub-metric-tabs, .ghub-report-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.ghub-tab { padding: 5px 12px; border-radius: 999px; text-decoration: none; color: #50575e; font-size: 13px; font-weight: 600; }
+.ghub-tab:hover { background: #f0f0f1; color: #1d2327; }
+.ghub-tab.is-active { background: #2271b1; color: #fff; }
+
+.ghub-table .ghub-rank { width: 44px; text-align: center; color: #787c82; }
+.ghub-table .ghub-metric { font-weight: 700; }
+.ghub-gamecell .ghub-rowlinks { display: block; font-size: 12px; color: #787c82; }
+.ghub-gamecell .ghub-rowlinks a { text-decoration: none; }
+.ghub-empty { color: #787c82; padding: 24px 0; }
+
+#ghub-chart { width: 100%; max-width: 100%; }

@@ -1,0 +1,54 @@
+name: Release GameHub package
+
+# Push a version tag to publish a release for ONE package:
+#   engine-v1.0.1     -> builds gamehub-engine.zip
+#   theme-v1.0.1      -> builds gamehub.zip
+#   analytics-v1.0.1  -> builds gamehub-analytics.zip
+#
+# The WordPress self-updater reads the latest release whose tag matches the
+# package's prefix, so each package versions independently in this monorepo.
+
+on:
+  push:
+    tags:
+      - 'engine-*'
+      - 'theme-*'
+      - 'analytics-*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve package from tag
+        id: pkg
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          case "$TAG" in
+            engine-*)    SLUG=gamehub-engine;    SRC=wp-content/plugins/gamehub-engine ;;
+            analytics-*) SLUG=gamehub-analytics; SRC=wp-content/plugins/gamehub-analytics ;;
+            theme-*)     SLUG=gamehub;           SRC=wp-content/themes/gamehub ;;
+            *) echo "Unknown tag prefix: $TAG" && exit 1 ;;
+          esac
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "src=$SRC"   >> "$GITHUB_OUTPUT"
+
+      - name: Build zip
+        run: |
+          SRC="${{ steps.pkg.outputs.src }}"
+          SLUG="${{ steps.pkg.outputs.slug }}"
+          mkdir -p dist
+          ( cd "$(dirname "$SRC")" && zip -rq "$GITHUB_WORKSPACE/dist/$SLUG.zip" "$(basename "$SRC")" -x '*.DS_Store' )
+          unzip -l "dist/$SLUG.zip" | head -5
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: dist/${{ steps.pkg.outputs.slug }}.zip
+          generate_release_notes: true
