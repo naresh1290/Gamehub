@@ -10,24 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
-
-$tagline = '';
-if ( class_exists( 'GameHub_Settings' ) ) {
-	$tagline = GameHub_Settings::get()['site_tagline'] ?? '';
-}
-if ( '' === $tagline ) {
-	$tagline = get_bloginfo( 'description' );
-}
 ?>
-
-<section class="gh-hero">
-	<div class="gh-container">
-		<h1><?php bloginfo( 'name' ); ?></h1>
-		<?php if ( $tagline ) : ?>
-			<p><?php echo esc_html( $tagline ); ?></p>
-		<?php endif; ?>
-	</div>
-</section>
 
 <?php // Recently played — populated client-side from localStorage. ?>
 <section class="gh-section" data-gh-recent hidden>
