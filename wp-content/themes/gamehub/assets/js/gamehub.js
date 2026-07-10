@@ -190,7 +190,24 @@
 			sessionStart = Date.now();
 		}
 		function enterImmersive() { inject(); wrap.classList.add('is-immersive'); document.body.classList.add('gh-noscroll'); }
-		function exitImmersive() { wrap.classList.remove('is-immersive'); document.body.classList.remove('gh-noscroll'); }
+		function exitImmersive() {
+			wrap.classList.remove('is-immersive');
+			document.body.classList.remove('gh-noscroll');
+			// On phones the game lives only in fullscreen — closing returns to the
+			// play tile (icon + play button) so it can be launched again.
+			if (!isDesktop) { teardown(); }
+		}
+		function teardown() {
+			flush();
+			var f = stage.querySelector('iframe');
+			if (f) { f.remove(); }
+			var l = stage.querySelector('.gh-player-loader');
+			if (l) { l.remove(); }
+			if (launch) { launch.style.display = ''; }
+			started = false;
+			sessionStart = 0;
+			buffered = 0;
+		}
 
 		// Tablet/desktop: run the game directly. Phones: tap to launch fullscreen.
 		var isDesktop = window.innerWidth >= 768;

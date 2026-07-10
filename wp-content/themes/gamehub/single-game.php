@@ -87,6 +87,9 @@ while ( have_posts() ) :
 						<div class="gh-player-stage">
 							<div class="gh-player-launch" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Play', 'gamehub' ); ?>"
 								<?php if ( $game['icon'] ) : ?>style="background-image:url('<?php echo esc_url( $game['icon'] ); ?>')"<?php endif; ?>>
+								<?php if ( $game['icon'] ) : ?>
+									<img class="gh-launch-icon" src="<?php echo esc_url( $game['icon'] ); ?>" alt="<?php echo esc_attr( $game['name'] ); ?>">
+								<?php endif; ?>
 								<span class="gh-play-btn">
 									<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
 								</span>
