@@ -17,6 +17,7 @@ const GHUB_META_IFRAME      = '_ghub_iframe_url';
 const GHUB_META_ICON        = '_ghub_icon_url';
 const GHUB_META_FLAGS       = '_ghub_flags';
 const GHUB_META_PRIMARY_CAT = '_ghub_primary_category';
+const GHUB_META_POPULAR     = '_ghub_popular';
 
 /**
  * Pick the first non-empty value from $data for any of the candidate $keys.
@@ -305,7 +306,11 @@ function ghub_popular_order_clauses( $clauses, $query ) {
 	if ( false === strpos( $clauses['join'], ' ghs ' ) ) {
 		$clauses['join'] .= " LEFT JOIN $stats ghs ON ghs.post_id = {$wpdb->posts}.ID ";
 	}
+	if ( false === strpos( $clauses['join'], ' ghpop ' ) ) {
+		$clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} ghpop ON ghpop.post_id = {$wpdb->posts}.ID AND ghpop.meta_key = '" . GHUB_META_POPULAR . "' ";
+	}
 	$clauses['orderby'] =
+		"(ghpop.meta_value = '1') DESC, " .
 		'COALESCE(ghs.plays,0) DESC, ' .
 		'(COALESCE(ghs.likes,0) / NULLIF(COALESCE(ghs.likes,0) + COALESCE(ghs.dislikes,0), 0)) DESC, ' .
 		'COALESCE(ghs.likes,0) DESC, ' .

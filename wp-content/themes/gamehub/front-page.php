@@ -25,11 +25,16 @@ get_header();
 <?php else : ?>
 
 	<?php
-	// Popular strip: most-played across the whole catalog, via the stats table.
-	global $wpdb;
-	$stats_table = $wpdb->prefix . 'gh_stats';
-	$popular_ids = $wpdb->get_col( "SELECT s.post_id FROM $stats_table s INNER JOIN {$wpdb->posts} p ON p.ID = s.post_id AND p.post_status = 'publish' AND p.post_type = 'game' ORDER BY s.plays DESC LIMIT 12" );
-	if ( $popular_ids ) :
+	// Popular strip: popular-flagged games first, then most-played.
+	$popular_q = new WP_Query(
+		array(
+			'post_type'      => 'game',
+			'posts_per_page' => 12,
+			'no_found_rows'  => true,
+			'ghub_order'     => 'popular',
+		)
+	);
+	if ( $popular_q->have_posts() ) :
 		?>
 		<section class="gh-section">
 			<div class="gh-container">
@@ -37,10 +42,13 @@ get_header();
 					<h2><?php esc_html_e( 'Popular games', 'gamehub' ); ?></h2>
 					<a href="<?php echo esc_url( get_post_type_archive_link( 'game' ) ); ?>"><?php esc_html_e( 'View all', 'gamehub' ); ?> →</a>
 				</div>
-				<?php gamehub_grid( array_map( 'get_post', $popular_ids ) ); ?>
+				<?php gamehub_grid( $popular_q ); ?>
 			</div>
 		</section>
-	<?php endif; ?>
+		<?php
+		wp_reset_postdata();
+	endif;
+	?>
 
 	<?php
 	// A row per category (top categories first), each with up to 12 games.

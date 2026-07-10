@@ -38,6 +38,7 @@ require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-import-page.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-rest.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-sitemap.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-metabox.php';
+require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-admin-list.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-updater.php';
 
 /**
@@ -53,6 +54,7 @@ function ghub_engine_boot() {
 	GameHub_Sitemap::instance();
 	if ( is_admin() ) {
 		GameHub_Metabox::instance();
+		GameHub_Admin_List::instance();
 	}
 
 	// Self-update from GitHub releases.
