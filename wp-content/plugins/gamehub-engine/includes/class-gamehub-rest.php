@@ -47,6 +47,19 @@ class GameHub_REST {
 			)
 		);
 
+		register_rest_route(
+			self::NS,
+			'/search',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'q' => array( 'type' => 'string', 'required' => true ),
+				),
+				'callback'            => array( $this, 'search' ),
+			)
+		);
+
 		$id_arg = array(
 			'id' => array(
 				'required'          => true,
@@ -142,6 +155,63 @@ class GameHub_REST {
 		foreach ( $posts as $p ) {
 			$out[] = ghub_get_game( $p );
 		}
+		return rest_ensure_response( $out );
+	}
+
+	/**
+	 * Instant search across game titles and category names.
+	 * Returns light payloads (name, url, icon) for a navigate-on-click dropdown.
+	 */
+	public function search( $req ) {
+		$q   = trim( (string) $req->get_param( 'q' ) );
+		$out = array( 'games' => array(), 'categories' => array() );
+		if ( '' === $q || mb_strlen( $q ) < 1 ) {
+			return rest_ensure_response( $out );
+		}
+
+		$posts = get_posts(
+			array(
+				'post_type'      => 'game',
+				'post_status'    => 'publish',
+				'posts_per_page' => 8,
+				's'              => $q,
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $posts as $p ) {
+			$icon = get_post_meta( $p->ID, GHUB_META_ICON, true );
+			if ( ! $icon ) {
+				$icon = get_the_post_thumbnail_url( $p->ID, 'thumbnail' );
+			}
+			$out['games'][] = array(
+				'name' => get_the_title( $p ),
+				'url'  => get_permalink( $p ),
+				'icon' => ghub_proxy_icon_url( (string) $icon ),
+			);
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'game_category',
+				'hide_empty' => false,
+				'name__like' => $q,
+				'number'     => 6,
+			)
+		);
+		if ( ! is_wp_error( $terms ) ) {
+			foreach ( $terms as $t ) {
+				$link = get_term_link( $t );
+				if ( is_wp_error( $link ) ) {
+					continue;
+				}
+				$out['categories'][] = array(
+					'name'  => $t->name,
+					'url'   => $link,
+					'count' => (int) $t->count,
+				);
+			}
+		}
+
 		return rest_ensure_response( $out );
 	}
 

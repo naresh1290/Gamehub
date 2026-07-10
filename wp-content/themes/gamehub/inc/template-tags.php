@@ -78,6 +78,25 @@ function gamehub_short_num( $n ) {
 }
 
 /**
+ * Render an SEO/content section. Accepts raw HTML (already sanitized).
+ *
+ * @param string $html    Content HTML.
+ * @param string $heading Optional heading.
+ */
+function gamehub_content_section( $html, $heading = '' ) {
+	$html = trim( (string) $html );
+	if ( '' === $html ) {
+		return;
+	}
+	echo '<section class="gh-content"><div class="gh-content-inner">';
+	if ( $heading ) {
+		echo '<h2>' . esc_html( $heading ) . '</h2>';
+	}
+	echo wpautop( wp_kses_post( $html ) );
+	echo '</div></section>';
+}
+
+/**
  * The list of game categories for the chip bar / nav.
  *
  * @return WP_Term[]

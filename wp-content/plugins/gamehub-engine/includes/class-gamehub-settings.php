@@ -51,6 +51,7 @@ class GameHub_Settings {
 			'icon_proxy_path' => 'img',
 			// Branding.
 			'site_tagline'    => '',
+			'homepage_content' => '', // SEO/content block shown at the bottom of the homepage.
 			// Updates (monorepo shared by all three, distinguished by tag prefix).
 			'github_repo'          => 'naresh1290/Gamehub',
 			'github_repo_theme'    => 'naresh1290/Gamehub',
@@ -117,8 +118,9 @@ class GameHub_Settings {
 		$out['slug_category'] = sanitize_title( $input['slug_category'] ?? 'c' ) ?: 'c';
 		$out['per_page']      = max( 1, min( 500, (int) ( $input['per_page'] ?? 60 ) ) );
 
-		$out['proxy_origin']  = esc_url_raw( trim( (string) ( $input['proxy_origin'] ?? '' ) ) );
-		$out['site_tagline']  = sanitize_text_field( $input['site_tagline'] ?? '' );
+		$out['proxy_origin']     = esc_url_raw( trim( (string) ( $input['proxy_origin'] ?? '' ) ) );
+		$out['site_tagline']     = sanitize_text_field( $input['site_tagline'] ?? '' );
+		$out['homepage_content'] = wp_kses_post( $input['homepage_content'] ?? '' );
 
 		$out['icon_proxy']      = empty( $input['icon_proxy'] ) ? 0 : 1;
 		// Store bare host only (strip scheme/path if pasted).
@@ -272,6 +274,13 @@ class GameHub_Settings {
 					<tr>
 						<th scope="row"><label for="ghub_tagline"><?php esc_html_e( 'Homepage tagline', 'gamehub-engine' ); ?></label></th>
 						<td><input type="text" id="ghub_tagline" class="large-text" name="<?php echo esc_attr( self::OPTION ); ?>[site_tagline]" value="<?php echo esc_attr( $s['site_tagline'] ); ?>" placeholder="<?php esc_attr_e( 'Play free online games', 'gamehub-engine' ); ?>"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ghub_home_content"><?php esc_html_e( 'Homepage content', 'gamehub-engine' ); ?></label></th>
+						<td>
+							<textarea id="ghub_home_content" name="<?php echo esc_attr( self::OPTION ); ?>[homepage_content]" rows="6" class="large-text"><?php echo esc_textarea( $s['homepage_content'] ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'SEO / intro text shown in the content section at the bottom of the homepage. Basic HTML allowed.', 'gamehub-engine' ); ?></p>
+						</td>
 					</tr>
 				</table>
 

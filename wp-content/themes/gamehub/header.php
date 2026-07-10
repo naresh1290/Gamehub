@@ -1,6 +1,7 @@
 <?php
 /**
- * Header.
+ * Header — app shell: fixed left sidebar (nav + categories + pages) and a
+ * top bar with instant search.
  *
  * @package GameHub\Theme
  */
@@ -8,6 +9,9 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$gh_cats = function_exists( 'gamehub_categories' ) ? gamehub_categories() : array();
+$gh_archive = get_post_type_archive_link( 'game' );
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -18,39 +22,72 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
-<header class="gh-header">
-	<div class="gh-container gh-header-inner">
-		<a class="gh-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<?php if ( has_custom_logo() ) : ?>
-				<?php the_custom_logo(); ?>
-			<?php else : ?>
-				<span class="gh-logo-mark">🎮</span>
-				<span><?php bloginfo( 'name' ); ?></span>
-			<?php endif; ?>
-		</a>
+<div class="gh-app">
 
-		<form class="gh-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-			<input type="search" name="s" value="<?php echo esc_attr( get_search_query() ); ?>" placeholder="<?php esc_attr_e( 'Search games…', 'gamehub' ); ?>" autocomplete="off">
-			<input type="hidden" name="post_type" value="game">
-		</form>
+	<aside class="gh-sidebar" id="gh-sidebar">
+		<div class="gh-sidebar-head">
+			<a class="gh-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+				<?php if ( has_custom_logo() ) : ?>
+					<?php the_custom_logo(); ?>
+				<?php else : ?>
+					<span class="gh-logo-mark">🎮</span>
+					<span class="gh-logo-text"><?php bloginfo( 'name' ); ?></span>
+				<?php endif; ?>
+			</a>
+			<button class="gh-sidebar-close" type="button" data-gh-sidebar-close aria-label="<?php esc_attr_e( 'Close menu', 'gamehub' ); ?>">✕</button>
+		</div>
 
-		<button type="button" class="gh-theme-toggle" aria-label="<?php esc_attr_e( 'Toggle theme', 'gamehub' ); ?>" data-gh-theme-toggle>
-			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-		</button>
-	</div>
+		<nav class="gh-nav" aria-label="<?php esc_attr_e( 'Main', 'gamehub' ); ?>">
+			<a class="gh-nav-item<?php echo is_front_page() ? ' is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+				<span class="gh-nav-ico">🏠</span> <?php esc_html_e( 'Home', 'gamehub' ); ?>
+			</a>
+			<a class="gh-nav-item" href="<?php echo esc_url( add_query_arg( 'sort', 'new', $gh_archive ) ); ?>">
+				<span class="gh-nav-ico">✨</span> <?php esc_html_e( 'New', 'gamehub' ); ?>
+			</a>
+			<a class="gh-nav-item<?php echo is_post_type_archive( 'game' ) && ! isset( $_GET['sort'] ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_archive ); ?>">
+				<span class="gh-nav-ico">🔥</span> <?php esc_html_e( 'All Games', 'gamehub' ); ?>
+			</a>
 
-	<?php $cats = gamehub_categories(); ?>
-	<?php if ( $cats ) : ?>
-		<nav class="gh-catbar" aria-label="<?php esc_attr_e( 'Categories', 'gamehub' ); ?>">
-			<div class="gh-catbar-inner">
-				<a class="gh-chip<?php echo is_post_type_archive( 'game' ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( get_post_type_archive_link( 'game' ) ); ?>"><?php esc_html_e( 'All', 'gamehub' ); ?></a>
-				<?php foreach ( $cats as $cat ) : ?>
-					<a class="gh-chip<?php echo ( is_tax( 'game_category', $cat->term_id ) ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( get_term_link( $cat ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+			<?php if ( $gh_cats ) : ?>
+				<div class="gh-nav-sep"></div>
+				<div class="gh-nav-label"><?php esc_html_e( 'Categories', 'gamehub' ); ?></div>
+				<?php foreach ( $gh_cats as $gh_cat ) : ?>
+					<?php $gh_link = get_term_link( $gh_cat ); if ( is_wp_error( $gh_link ) ) { continue; } ?>
+					<a class="gh-nav-item gh-nav-cat<?php echo is_tax( 'game_category', $gh_cat->term_id ) ? ' is-active' : ''; ?>" href="<?php echo esc_url( $gh_link ); ?>">
+						<span class="gh-cat-ico"><?php echo esc_html( mb_substr( $gh_cat->name, 0, 1 ) ); ?></span>
+						<span class="gh-nav-cat-name"><?php echo esc_html( $gh_cat->name ); ?></span>
+					</a>
 				<?php endforeach; ?>
-			</div>
-		</nav>
-	<?php endif; ?>
-</header>
+			<?php endif; ?>
 
-<main id="gh-main">
+			<?php
+			$gh_pages = get_pages( array( 'sort_column' => 'menu_order,post_title', 'number' => 20 ) );
+			if ( $gh_pages ) :
+				?>
+				<div class="gh-nav-sep"></div>
+				<div class="gh-nav-foot">
+					<?php foreach ( $gh_pages as $gh_page ) : ?>
+						<a class="gh-nav-foot-link" href="<?php echo esc_url( get_permalink( $gh_page ) ); ?>"><?php echo esc_html( get_the_title( $gh_page ) ); ?></a>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+		</nav>
+	</aside>
+
+	<div class="gh-sidebar-overlay" data-gh-sidebar-close></div>
+
+	<div class="gh-shell">
+		<header class="gh-topbar">
+			<button class="gh-menu-btn" type="button" data-gh-sidebar-open aria-label="<?php esc_attr_e( 'Open menu', 'gamehub' ); ?>">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+			</button>
+			<a class="gh-topbar-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>"><span class="gh-logo-mark">🎮</span></a>
+
+			<div class="gh-search" data-gh-search>
+				<svg class="gh-search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+				<input type="search" class="gh-search-input" placeholder="<?php esc_attr_e( 'Search games and categories', 'gamehub' ); ?>" autocomplete="off" aria-label="<?php esc_attr_e( 'Search', 'gamehub' ); ?>">
+				<div class="gh-search-panel" hidden></div>
+			</div>
+		</header>
+
+		<main class="gh-main" id="gh-main">

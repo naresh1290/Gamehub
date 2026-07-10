@@ -1,6 +1,5 @@
-/* GameHub theme front-end.
- * Talks to the GameHub Engine REST API (gamehub/v1) for plays, visits,
- * likes/dislikes, ratings, and play-session durations.
+/* GameHub theme front-end: layout (sidebar + instant search), player,
+ * metrics beacons, votes, theme toggle, and recently-played.
  */
 (function () {
 	'use strict';
@@ -17,106 +16,177 @@
 			body: body ? JSON.stringify(body) : null
 		}).then(function (r) { return r.ok ? r.json() : Promise.reject(r); });
 	}
-
 	function beacon(path, body) {
 		var url = REST + path + (NONCE ? ('?_wpnonce=' + encodeURIComponent(NONCE)) : '');
 		var data = new Blob([JSON.stringify(body || {})], { type: 'application/json' });
 		if (navigator.sendBeacon && navigator.sendBeacon(url, data)) { return; }
-		// Fallback: keepalive fetch.
 		fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}), keepalive: true }).catch(function () {});
 	}
-
-	/* ---- Local UI memory for a visitor's own votes/ratings ---- */
 	function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 	function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+	function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+	function shortNum(n) {
+		n = parseInt(n, 10) || 0;
+		if (n >= 1e6) { return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; }
+		if (n >= 1e3) { return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; }
+		return String(n);
+	}
 
-	/* ---- Theme toggle ---- */
+	/* ---- Sidebar toggle (mobile) ---- */
+	(function sidebar() {
+		var app = document.querySelector('.gh-app');
+		if (!app) { return; }
+		document.addEventListener('click', function (e) {
+			if (e.target.closest('[data-gh-sidebar-open]')) { app.classList.add('gh-sidebar-open'); }
+			else if (e.target.closest('[data-gh-sidebar-close]')) { app.classList.remove('gh-sidebar-open'); }
+		});
+	})();
+
+	/* ---- Theme toggle (persist) ---- */
 	(function theme() {
 		var saved = lsGet('gh-theme');
-		if (saved === 'dark' || saved === 'light') {
-			document.documentElement.setAttribute('data-theme', saved);
-		}
+		if (saved === 'dark' || saved === 'light') { document.documentElement.setAttribute('data-theme', saved); }
 		document.addEventListener('click', function (e) {
 			var btn = e.target.closest('[data-gh-theme-toggle]');
 			if (!btn) { return; }
-			var cur = document.documentElement.getAttribute('data-theme');
-			if (!cur) {
-				cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-			}
+			var cur = document.documentElement.getAttribute('data-theme') ||
+				(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 			var next = cur === 'dark' ? 'light' : 'dark';
 			document.documentElement.setAttribute('data-theme', next);
 			lsSet('gh-theme', next);
 		});
 	})();
 
+	/* ---- Instant search (games + categories, navigate on click) ---- */
+	(function search() {
+		var wrap = document.querySelector('[data-gh-search]');
+		if (!wrap) { return; }
+		var input = wrap.querySelector('.gh-search-input');
+		var panel = wrap.querySelector('.gh-search-panel');
+		var timer = null, seq = 0, items = [], active = -1;
+
+		function close() { panel.hidden = true; panel.innerHTML = ''; active = -1; items = []; }
+		function open() { panel.hidden = false; }
+
+		function render(data) {
+			var html = '';
+			if (data.categories && data.categories.length) {
+				html += '<div class="gh-search-group-label">Categories</div>';
+				data.categories.forEach(function (c) {
+					html += '<a class="gh-search-row" href="' + esc(c.url) + '">' +
+						'<span class="gh-search-thumb">#</span>' +
+						'<span><span class="gh-search-row-name">' + esc(c.name) + '</span>' +
+						'<span class="gh-search-row-sub">' + shortNum(c.count) + ' games</span></span></a>';
+				});
+			}
+			if (data.games && data.games.length) {
+				html += '<div class="gh-search-group-label">Games</div>';
+				data.games.forEach(function (g) {
+					var thumb = g.icon ? '<img src="' + esc(g.icon) + '" alt="" loading="lazy">' : '<span class="gh-search-thumb">' + esc((g.name || '?')[0]) + '</span>';
+					html += '<a class="gh-search-row" href="' + esc(g.url) + '">' + thumb +
+						'<span class="gh-search-row-name">' + esc(g.name) + '</span></a>';
+				});
+			}
+			if (!html) { html = '<div class="gh-search-empty">No games or categories found.</div>'; }
+			panel.innerHTML = html;
+			items = Array.prototype.slice.call(panel.querySelectorAll('.gh-search-row'));
+			active = -1;
+			open();
+		}
+
+		function run(q) {
+			var mine = ++seq;
+			fetch(REST + '/search?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+				.then(function (r) { return r.json(); })
+				.then(function (data) { if (mine === seq) { render(data); } })
+				.catch(function () {});
+		}
+
+		input.addEventListener('input', function () {
+			var q = input.value.trim();
+			clearTimeout(timer);
+			if (q.length < 1) { close(); return; }
+			timer = setTimeout(function () { run(q); }, 160);
+		});
+		input.addEventListener('focus', function () { if (input.value.trim() && panel.innerHTML) { open(); } });
+		input.addEventListener('keydown', function (e) {
+			if (panel.hidden || !items.length) { return; }
+			if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); }
+			else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); }
+			else if (e.key === 'Enter') { if (active >= 0) { e.preventDefault(); window.location.href = items[active].getAttribute('href'); } return; }
+			else if (e.key === 'Escape') { close(); return; }
+			items.forEach(function (el, i) { el.classList.toggle('is-active', i === active); });
+			if (items[active]) { items[active].scrollIntoView({ block: 'nearest' }); }
+		});
+		document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) { close(); } });
+	})();
+
+	/* ---- Recently played ---- */
+	function recordRecent() {
+		var head = document.querySelector('.gh-game-head');
+		if (!head) { return; }
+		var name = (head.querySelector('h1') || {}).textContent || document.title;
+		var img = head.querySelector('img');
+		var entry = { name: name.trim(), url: location.pathname, icon: img ? img.src : '' };
+		var list = lsGet('gh-recent') || [];
+		list = list.filter(function (x) { return x.url !== entry.url; });
+		list.unshift(entry);
+		lsSet('gh-recent', list.slice(0, 12));
+	}
+	function renderRecent() {
+		var sec = document.querySelector('[data-gh-recent]');
+		var grid = document.querySelector('[data-gh-recent-grid]');
+		if (!sec || !grid) { return; }
+		var list = (lsGet('gh-recent') || []).slice(0, 12);
+		if (!list.length) { return; }
+		grid.innerHTML = list.map(function (g) {
+			var thumb = g.icon ? '<img src="' + esc(g.icon) + '" alt="" loading="lazy">' : '';
+			return '<a class="gh-card" href="' + esc(g.url) + '"><div class="gh-card-thumb">' + thumb +
+				'</div><div class="gh-card-body"><p class="gh-card-title">' + esc(g.name) + '</p></div></a>';
+		}).join('');
+		sec.hidden = false;
+	}
+
 	/* ---- Player + session tracking ---- */
 	(function player() {
 		var wrap = document.querySelector('.gh-player');
-		if (!wrap) { return; }
+		if (!wrap) { renderRecent(); return; }
 		var gid = parseInt(wrap.getAttribute('data-game-id'), 10);
 		if (!gid) { return; }
 
-		// Count a page visit once per pageview.
+		recordRecent();
 		beacon('/games/' + gid + '/visit', {});
 
 		var cover = wrap.querySelector('.gh-player-cover');
-		var started = false;
-		var sessionStart = 0;
-		var buffered = 0; // seconds already accumulated but not yet flushed
+		var started = false, sessionStart = 0, buffered = 0;
 
 		function launch() {
 			if (started) { return; }
 			started = true;
-			var src = wrap.getAttribute('data-iframe');
-			var title = wrap.getAttribute('data-title') || 'game';
 			var iframe = document.createElement('iframe');
-			iframe.src = src;
-			iframe.title = title;
+			iframe.src = wrap.getAttribute('data-iframe');
+			iframe.title = wrap.getAttribute('data-title') || 'game';
 			iframe.allow = 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; clipboard-write; cross-origin-isolated';
 			iframe.allowFullscreen = true;
-			iframe.setAttribute('loading', 'eager');
 			if (cover) { cover.remove(); }
 			wrap.appendChild(iframe);
-
 			post('/games/' + gid + '/play', {}).catch(function () {});
 			sessionStart = Date.now();
 		}
-
 		if (cover) {
 			cover.addEventListener('click', launch);
-			cover.addEventListener('keydown', function (e) {
-				if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); launch(); }
-			});
+			cover.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); launch(); } });
 		}
 
-		function accrue() {
-			if (started && sessionStart) {
-				buffered += Math.round((Date.now() - sessionStart) / 1000);
-				sessionStart = 0;
-			}
-		}
-		function resume() {
-			if (started && !sessionStart && document.visibilityState === 'visible') {
-				sessionStart = Date.now();
-			}
-		}
-		function flush() {
-			accrue();
-			if (buffered >= 3) {
-				beacon('/games/' + gid + '/session', { seconds: buffered });
-				buffered = 0;
-			}
-		}
-
-		document.addEventListener('visibilitychange', function () {
-			if (document.visibilityState === 'hidden') { flush(); } else { resume(); }
-		});
+		function accrue() { if (started && sessionStart) { buffered += Math.round((Date.now() - sessionStart) / 1000); sessionStart = 0; } }
+		function resume() { if (started && !sessionStart && document.visibilityState === 'visible') { sessionStart = Date.now(); } }
+		function flush() { accrue(); if (buffered >= 3) { beacon('/games/' + gid + '/session', { seconds: buffered }); buffered = 0; } }
+		document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { flush(); } else { resume(); } });
 		window.addEventListener('pagehide', flush);
-		// Periodic flush for long sessions so data isn't lost on a crash.
 		setInterval(flush, 60000);
 	})();
 
-	/* ---- Like / dislike ---- */
+	/* ---- Like / dislike (+ derived rating) ---- */
 	(function votes() {
 		var bar = document.querySelector('.gh-actions');
 		if (!bar) { return; }
@@ -125,16 +195,14 @@
 		var voteKey = 'gh-vote-' + gid;
 		var likeBtn = bar.querySelector('.gh-like');
 		var dislikeBtn = bar.querySelector('.gh-dislike');
+		var ratingValueEl = document.querySelector('.gh-rating-value');
+		var voteTotalEl = document.querySelector('.gh-vote-total');
 
 		function paint(vote) {
 			if (likeBtn) { likeBtn.classList.toggle('is-active', vote === 'like'); }
 			if (dislikeBtn) { dislikeBtn.classList.toggle('is-active', vote === 'dislike'); }
 		}
 		paint(lsGet(voteKey));
-
-		// The derived rating (★ x.x) recomputes from likes/dislikes on the server.
-		var ratingValueEl = document.querySelector('.gh-rating-value');
-		var voteTotalEl = document.querySelector('.gh-vote-total');
 
 		function cast(action) {
 			post('/games/' + gid + '/' + action, {}).then(function (res) {
@@ -151,11 +219,4 @@
 		if (likeBtn) { likeBtn.addEventListener('click', function () { cast('like'); }); }
 		if (dislikeBtn) { dislikeBtn.addEventListener('click', function () { cast('dislike'); }); }
 	})();
-
-	function shortNum(n) {
-		n = parseInt(n, 10) || 0;
-		if (n >= 1e6) { return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; }
-		if (n >= 1e3) { return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; }
-		return String(n);
-	}
 })();

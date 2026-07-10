@@ -125,8 +125,15 @@ class GameHub_CPT {
 		if ( $query->is_post_type_archive( 'game' ) || $query->is_tax( 'game_category' ) ) {
 			$per_page = (int) ( GameHub_Settings::get()['per_page'] ?? 60 );
 			$query->set( 'posts_per_page', $per_page > 0 ? $per_page : 60 );
-			$query->set( 'orderby', 'menu_order title' );
-			$query->set( 'order', 'ASC' );
+
+			$sort = isset( $_GET['sort'] ) ? sanitize_key( wp_unslash( $_GET['sort'] ) ) : '';
+			if ( 'new' === $sort ) {
+				$query->set( 'orderby', 'date' );
+				$query->set( 'order', 'DESC' );
+			} else {
+				$query->set( 'orderby', 'menu_order title' );
+				$query->set( 'order', 'ASC' );
+			}
 		}
 	}
 }

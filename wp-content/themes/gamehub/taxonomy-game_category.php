@@ -16,11 +16,8 @@ $term = get_queried_object();
 <section class="gh-section">
 	<div class="gh-container">
 		<div class="gh-section-head">
-			<h2><?php echo esc_html( $term->name ); ?></h2>
+			<h2><?php echo esc_html( $term->name ); ?> <?php esc_html_e( 'Games', 'gamehub' ); ?></h2>
 		</div>
-		<?php if ( $term && $term->description ) : ?>
-			<p style="color:var(--gh-muted);margin:-6px 0 18px;max-width:720px"><?php echo esc_html( $term->description ); ?></p>
-		<?php endif; ?>
 
 		<?php if ( have_posts() ) : ?>
 			<div class="gh-grid">
@@ -45,6 +42,12 @@ $term = get_queried_object();
 		<?php else : ?>
 			<p class="gh-empty"><?php esc_html_e( 'No games in this category yet.', 'gamehub' ); ?></p>
 		<?php endif; ?>
+
+		<?php
+		if ( $term && ! empty( $term->description ) ) {
+			gamehub_content_section( $term->description );
+		}
+		?>
 	</div>
 </section>
 <?php get_footer(); ?>

@@ -29,6 +29,14 @@ if ( '' === $tagline ) {
 	</div>
 </section>
 
+<?php // Recently played — populated client-side from localStorage. ?>
+<section class="gh-section" data-gh-recent hidden>
+	<div class="gh-container">
+		<div class="gh-section-head"><h2><?php esc_html_e( 'Recently played', 'gamehub' ); ?></h2></div>
+		<div class="gh-grid" data-gh-recent-grid></div>
+	</div>
+</section>
+
 <?php if ( ! gamehub_engine_active() ) : ?>
 	<div class="gh-container"><p class="gh-empty"><?php esc_html_e( 'Activate the GameHub Engine plugin and import games to get started.', 'gamehub' ); ?></p></div>
 <?php else : ?>
@@ -81,6 +89,15 @@ if ( '' === $tagline ) {
 		<?php
 		wp_reset_postdata();
 	endforeach;
+	?>
+
+	<?php
+	$home_content = class_exists( 'GameHub_Settings' ) ? ( GameHub_Settings::get()['homepage_content'] ?? '' ) : '';
+	if ( $home_content ) {
+		echo '<div class="gh-container">';
+		gamehub_content_section( $home_content );
+		echo '</div>';
+	}
 	?>
 
 <?php endif; ?>
