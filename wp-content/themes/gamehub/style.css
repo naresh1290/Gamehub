@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.3.1
+Version:     1.3.2
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -194,7 +194,7 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-play-top > .gh-card .gh-card-body { padding: 7px 10px 9px; flex: 0 0 auto; }
 .gh-play-top > .gh-card .gh-card-title { font-size: 12.5px; }
 .gh-play-top > .gh-card .gh-card-meta { display: none; }
-@media (min-width: 980px) {
+@media (min-width: 1025px) {
 	.gh-play-top { grid-template-columns: repeat(8, 1fr); grid-auto-rows: 146px; }
 	.gh-play-center { grid-column: 2 / span 6; grid-row: 1 / span 3; }
 }
@@ -283,8 +283,20 @@ body.gh-noscroll { overflow: hidden; }
 	.gh-search { margin: 0; }
 }
 @media (max-width: 640px) {
-	.gh-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
 	.gh-container { padding: 0 14px; }
+}
+
+/* Tablet and below: smaller, icon-only tiles so more games fit per screen. */
+@media (max-width: 1024px) {
+	.gh-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+	.gh-card-body { display: none; }
+	.gh-hscroll .gh-card { flex-basis: 82px; }
+	.gh-play-top { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); grid-auto-rows: 92px; gap: 10px; }
+	.gh-play-center { grid-column: 1 / -1; grid-row: span 4; }
+}
+@media (max-width: 600px) {
+	.gh-grid { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; }
+	.gh-play-top { grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); grid-auto-rows: 74px; }
 }
 /* Desktop: collapsed icon rail that expands on hover, overlaying content. */
 @media (min-width: 1001px) {
