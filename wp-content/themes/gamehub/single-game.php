@@ -121,6 +121,22 @@ while ( have_posts() ) :
 					</div>
 				</div>
 
+				<?php // Mobile-only actions (phones auto-play fullscreen, so no fullscreen button here). ?>
+				<div class="gh-mobile-actions gh-actions" data-game-id="<?php echo (int) $game['id']; ?>">
+					<button type="button" class="gh-mb-btn gh-like" data-action="like">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v11M2 12v7a2 2 0 0 0 2 2h13.6a2 2 0 0 0 2-1.7l1.4-9a2 2 0 0 0-2-2.3H14l1-4.5A2.5 2.5 0 0 0 12.5 2L7 10z"/></svg>
+						<span class="gh-like-count"><?php echo esc_html( gamehub_short_num( $game['likes'] ) ); ?></span>
+					</button>
+					<button type="button" class="gh-mb-btn gh-dislike" data-action="dislike">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 14V3M22 12V5a2 2 0 0 0-2-2H6.4a2 2 0 0 0-2 1.7l-1.4 9A2 2 0 0 0 5 16h6l-1 4.5A2.5 2.5 0 0 0 12.5 22L17 14z"/></svg>
+						<span class="gh-dislike-count"><?php echo esc_html( gamehub_short_num( $game['dislikes'] ) ); ?></span>
+					</button>
+					<button type="button" class="gh-mb-btn gh-share" data-gh-share>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+						<span><?php esc_html_e( 'Share', 'gamehub' ); ?></span>
+					</button>
+				</div>
+
 				<?php foreach ( $around as $rg ) { gamehub_card( $rg ); } ?>
 			</div>
 

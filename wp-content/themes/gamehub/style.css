@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.3.6
+Version:     1.3.7
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -203,7 +203,7 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-player-launch { position: absolute; inset: 0; display: grid; place-items: center; background-size: cover; background-position: center; cursor: pointer; }
 .gh-player-launch::after { content: ""; position: absolute; inset: 0; z-index: 1; background: rgba(8,10,15,.55); backdrop-filter: blur(12px); }
 /* The crisp game image is shown 1:1 (never cropped), over a blurred backdrop. */
-.gh-launch-icon { grid-area: 1 / 1; z-index: 2; width: min(52%, 240px); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; box-shadow: 0 14px 40px rgba(0,0,0,.55); }
+.gh-launch-icon { grid-area: 1 / 1; z-index: 2; height: min(64%, 220px); width: auto; max-width: 80%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; box-shadow: 0 14px 40px rgba(0,0,0,.55); }
 .gh-play-btn { grid-area: 1 / 1; position: relative; z-index: 3; width: 72px; height: 72px; border-radius: 50%; background: var(--gh-accent); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.5); transition: transform .15s; }
 .gh-player-launch:hover .gh-play-btn { transform: scale(1.06); }
 
@@ -292,6 +292,19 @@ body.gh-noscroll { overflow: hidden; }
 @media (max-width: 600px) {
 	.gh-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
 	.gh-play-top { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+}
+/* Mobile actions row (below the poster) — like / dislike / share only. */
+.gh-mobile-actions { display: none; }
+.gh-mb-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--gh-surface); border: 1px solid var(--gh-border); color: var(--gh-text); border-radius: 999px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.gh-mb-btn:hover { background: var(--gh-surface-2); }
+.gh-mb-btn.is-active.gh-like { color: var(--gh-like); border-color: var(--gh-like); }
+.gh-mb-btn.is-active.gh-dislike { color: var(--gh-dislike); border-color: var(--gh-dislike); }
+
+/* Phones (below 16:9): square poster + separate actions row, no in-frame bar. */
+@media (max-width: 767px) {
+	.gh-play-center { aspect-ratio: 1 / 1; }
+	.gh-player-bar { display: none; }
+	.gh-mobile-actions { display: flex; grid-column: 1 / -1; justify-content: center; gap: 10px; padding: 8px 0 4px; }
 }
 /* Desktop: collapsed icon rail that expands on hover, overlaying content. */
 @media (min-width: 1001px) {

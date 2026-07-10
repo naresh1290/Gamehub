@@ -250,19 +250,21 @@
 			requestExit();
 		});
 
-		var shareBtn = wrap.querySelector('[data-gh-share]');
-		if (shareBtn) {
-			shareBtn.addEventListener('click', function () {
-				var url = location.href, title = wrap.getAttribute('data-title') || document.title;
-				if (navigator.share) { navigator.share({ title: title, url: url }).catch(function () {}); }
-				else if (navigator.clipboard) {
-					navigator.clipboard.writeText(url).then(function () {
-						shareBtn.classList.add('is-active');
-						setTimeout(function () { shareBtn.classList.remove('is-active'); }, 1200);
-					});
-				}
-			});
+		// Share buttons (in-frame bar + mobile actions row).
+		function doShare(e) {
+			var btn = e.currentTarget;
+			var url = location.href, title = wrap.getAttribute('data-title') || document.title;
+			if (navigator.share) { navigator.share({ title: title, url: url }).catch(function () {}); }
+			else if (navigator.clipboard) {
+				navigator.clipboard.writeText(url).then(function () {
+					btn.classList.add('is-active');
+					setTimeout(function () { btn.classList.remove('is-active'); }, 1200);
+				});
+			}
 		}
+		Array.prototype.forEach.call(document.querySelectorAll('[data-gh-share]'), function (btn) {
+			btn.addEventListener('click', doShare);
+		});
 
 		function accrue() { if (started && sessionStart) { buffered += Math.round((Date.now() - sessionStart) / 1000); sessionStart = 0; } }
 		function resume() { if (started && !sessionStart && document.visibilityState === 'visible') { sessionStart = Date.now(); } }
@@ -272,37 +274,36 @@
 		setInterval(flush, 60000);
 	})();
 
-	/* ---- Like / dislike (+ derived rating) ---- */
+	/* ---- Like / dislike (wires every action bar: in-frame + mobile) ---- */
 	(function votes() {
 		var bar = document.querySelector('.gh-actions');
 		if (!bar) { return; }
 		var gid = parseInt(bar.getAttribute('data-game-id'), 10);
 		if (!gid) { return; }
 		var voteKey = 'gh-vote-' + gid;
-		var likeBtn = bar.querySelector('.gh-like');
-		var dislikeBtn = bar.querySelector('.gh-dislike');
-		var ratingValueEl = document.querySelector('.gh-rating-value');
-		var voteTotalEl = document.querySelector('.gh-vote-total');
+		var likeBtns = document.querySelectorAll('.gh-like');
+		var dislikeBtns = document.querySelectorAll('.gh-dislike');
 
+		function each(list, fn) { Array.prototype.forEach.call(list, fn); }
 		function paint(vote) {
-			if (likeBtn) { likeBtn.classList.toggle('is-active', vote === 'like'); }
-			if (dislikeBtn) { dislikeBtn.classList.toggle('is-active', vote === 'dislike'); }
+			each(likeBtns, function (b) { b.classList.toggle('is-active', vote === 'like'); });
+			each(dislikeBtns, function (b) { b.classList.toggle('is-active', vote === 'dislike'); });
 		}
 		paint(lsGet(voteKey));
 
 		function cast(action) {
 			post('/games/' + gid + '/' + action, {}).then(function (res) {
-				if (bar.querySelector('.gh-like-count')) { bar.querySelector('.gh-like-count').textContent = shortNum(res.likes); }
-				if (bar.querySelector('.gh-dislike-count')) { bar.querySelector('.gh-dislike-count').textContent = shortNum(res.dislikes); }
-				if (ratingValueEl && typeof res.rating !== 'undefined') {
-					ratingValueEl.textContent = res.rating_count > 0 ? ('★ ' + (Math.round(res.rating * 10) / 10)) : '';
-				}
-				if (voteTotalEl && typeof res.rating_count !== 'undefined') { voteTotalEl.textContent = shortNum(res.rating_count); }
+				each(document.querySelectorAll('.gh-like-count'), function (e) { e.textContent = shortNum(res.likes); });
+				each(document.querySelectorAll('.gh-dislike-count'), function (e) { e.textContent = shortNum(res.dislikes); });
+				var rv = document.querySelector('.gh-rating-value');
+				if (rv && typeof res.rating !== 'undefined') { rv.textContent = res.rating_count > 0 ? ('★ ' + (Math.round(res.rating * 10) / 10)) : ''; }
+				var vt = document.querySelector('.gh-vote-total');
+				if (vt && typeof res.rating_count !== 'undefined') { vt.textContent = shortNum(res.rating_count); }
 				lsSet(voteKey, res.user_vote);
 				paint(res.user_vote);
 			}).catch(function () {});
 		}
-		if (likeBtn) { likeBtn.addEventListener('click', function () { cast('like'); }); }
-		if (dislikeBtn) { dislikeBtn.addEventListener('click', function () { cast('dislike'); }); }
+		each(likeBtns, function (b) { b.addEventListener('click', function () { cast('like'); }); });
+		each(dislikeBtns, function (b) { b.addEventListener('click', function () { cast('dislike'); }); });
 	})();
 })();
