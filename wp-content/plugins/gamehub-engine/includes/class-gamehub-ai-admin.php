@@ -31,6 +31,7 @@ class GameHub_AI_Admin {
 		add_action( 'wp_ajax_ghub_ai_generate_one', array( $this, 'ajax_generate_one' ) );
 		add_action( 'wp_ajax_ghub_ai_generate_home', array( $this, 'ajax_generate_home' ) );
 		add_action( 'wp_ajax_ghub_ai_reset', array( $this, 'ajax_reset' ) );
+		add_action( 'wp_ajax_ghub_ai_reformat', array( $this, 'ajax_reformat' ) );
 		// Quick links from the list screens.
 		add_filter( 'views_edit-game', array( $this, 'list_link' ) );
 		add_filter( 'views_edit-game_category', array( $this, 'list_link' ) );
@@ -120,6 +121,7 @@ class GameHub_AI_Admin {
 				<p>
 					<button type="button" class="button button-primary" data-ghub-bulk="games" <?php disabled( ! $ready ); ?>><?php esc_html_e( 'Generate all pending', 'gamehub-engine' ); ?></button>
 					<button type="button" class="button" data-ghub-stop="games" style="display:none"><?php esc_html_e( 'Stop', 'gamehub-engine' ); ?></button>
+					<a href="#" class="button-link" data-ghub-reformat="games" style="margin-left:10px"><?php esc_html_e( 'Reformat existing (no API cost)', 'gamehub-engine' ); ?></a>
 					<a href="#" class="button-link" data-ghub-reset="games" style="margin-left:10px;color:#b32d2e"><?php esc_html_e( 'Reset (allow regenerate)', 'gamehub-engine' ); ?></a>
 				</p>
 				<div class="ghub-bar"><div class="ghub-bar-fill"></div></div>
@@ -133,6 +135,7 @@ class GameHub_AI_Admin {
 				<p>
 					<button type="button" class="button button-primary" data-ghub-bulk="categories" <?php disabled( ! $ready ); ?>><?php esc_html_e( 'Generate all pending', 'gamehub-engine' ); ?></button>
 					<button type="button" class="button" data-ghub-stop="categories" style="display:none"><?php esc_html_e( 'Stop', 'gamehub-engine' ); ?></button>
+					<a href="#" class="button-link" data-ghub-reformat="categories" style="margin-left:10px"><?php esc_html_e( 'Reformat existing (no API cost)', 'gamehub-engine' ); ?></a>
 					<a href="#" class="button-link" data-ghub-reset="categories" style="margin-left:10px;color:#b32d2e"><?php esc_html_e( 'Reset (allow regenerate)', 'gamehub-engine' ); ?></a>
 				</p>
 				<div class="ghub-bar"><div class="ghub-bar-fill"></div></div>
@@ -168,7 +171,18 @@ class GameHub_AI_Admin {
 		if (sb) { e.preventDefault(); STOP[sb.getAttribute('data-ghub-stop')] = true; return; }
 		var rb = e.target.closest('[data-ghub-reset]');
 		if (rb) { e.preventDefault(); resetType(rb.getAttribute('data-ghub-reset')); return; }
+		var fb = e.target.closest('[data-ghub-reformat]');
+		if (fb) { e.preventDefault(); reformat(fb.getAttribute('data-ghub-reformat')); return; }
 	});
+	function reformat(type) {
+		var box = document.getElementById('ghub-bulk-' + type);
+		if (!box) { return; }
+		var status = box.querySelector('.ghub-gen-status');
+		status.textContent = 'Reformatting existing content…';
+		post({ action: 'ghub_ai_reformat', type: type }).then(function (res) {
+			status.textContent = res.success ? (res.data.fixed + ' item(s) reformatted to HTML.') : 'Reformat failed.';
+		}).catch(function () { status.textContent = 'Request failed.'; });
+	}
 	function genHome(btn) {
 		var st = document.getElementById('ghub-home-status');
 		btn.disabled = true;
@@ -257,6 +271,13 @@ JS;
 			wp_send_json_error( array( 'error' => $r->get_error_message() ) );
 		}
 		wp_send_json_success( array( 'content' => $r ) );
+	}
+
+	public function ajax_reformat() {
+		$this->guard();
+		$type  = sanitize_key( wp_unslash( $_POST['type'] ?? '' ) );
+		$fixed = GameHub_AI::reformat_existing( $type );
+		wp_send_json_success( array( 'fixed' => (int) $fixed ) );
 	}
 
 	public function ajax_reset() {
