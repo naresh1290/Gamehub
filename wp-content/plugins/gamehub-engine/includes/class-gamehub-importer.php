@@ -64,12 +64,48 @@ class GameHub_Importer {
 	 * @return array|WP_Error Import stats or error.
 	 */
 	public function run_from_settings() {
-		$s   = GameHub_Settings::get();
-		$url = trim( (string) $s['json_url'] );
+		$s = GameHub_Settings::get();
+		return $this->import_from_url(
+			trim( (string) $s['json_url'] ),
+			array(
+				'update_existing'    => ! empty( $s['update_existing'] ),
+				'deactivate_missing' => ! empty( $s['deactivate_missing'] ),
+			)
+		);
+	}
+
+	/**
+	 * Fetch a JSON URL and import it.
+	 *
+	 * @param string $url     Feed URL.
+	 * @param array  $options update_existing, deactivate_missing.
+	 * @return array|WP_Error
+	 */
+	public function import_from_url( $url, $options = array() ) {
+		$url = trim( (string) $url );
 		if ( '' === $url ) {
-			return new WP_Error( 'no_url', __( 'No JSON URL is configured.', 'gamehub-engine' ) );
+			return new WP_Error( 'no_url', __( 'No JSON URL was provided.', 'gamehub-engine' ) );
 		}
 
+		$body = $this->fetch_url( $url );
+		if ( is_wp_error( $body ) ) {
+			return $body;
+		}
+
+		$stats = $this->import_json( $body, $options );
+		if ( ! is_wp_error( $stats ) ) {
+			update_option( 'ghub_last_sync', time() );
+		}
+		return $stats;
+	}
+
+	/**
+	 * GET a URL and return its body, or a WP_Error.
+	 *
+	 * @param string $url URL.
+	 * @return string|WP_Error
+	 */
+	private function fetch_url( $url ) {
 		$response = wp_remote_get(
 			$url,
 			array(
@@ -85,20 +121,7 @@ class GameHub_Importer {
 		if ( $code < 200 || $code >= 300 ) {
 			return new WP_Error( 'http_error', sprintf( /* translators: HTTP status */ __( 'Feed returned HTTP %d.', 'gamehub-engine' ), $code ) );
 		}
-
-		$body  = wp_remote_retrieve_body( $response );
-		$stats = $this->import_json(
-			$body,
-			array(
-				'update_existing'    => ! empty( $s['update_existing'] ),
-				'deactivate_missing' => ! empty( $s['deactivate_missing'] ),
-			)
-		);
-
-		if ( ! is_wp_error( $stats ) ) {
-			update_option( 'ghub_last_sync', time() );
-		}
-		return $stats;
+		return (string) wp_remote_retrieve_body( $response );
 	}
 
 	/**

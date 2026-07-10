@@ -34,6 +34,7 @@ require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-stats.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-cpt.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-settings.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-importer.php';
+require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-import-page.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-rest.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-sitemap.php';
 require_once GHUB_ENGINE_PATH . 'includes/class-gamehub-updater.php';
@@ -46,6 +47,7 @@ function ghub_engine_boot() {
 	GameHub_Stats::instance();
 	GameHub_Settings::instance();
 	GameHub_Importer::instance();
+	GameHub_Import_Page::instance();
 	GameHub_REST::instance();
 	GameHub_Sitemap::instance();
 
