@@ -225,12 +225,13 @@ class GameHub_Importer {
 		}
 
 		return array(
-			'source_id'  => trim( (string) ghub_pick( $item, array( 'game_id', 'gameid', 'id' ) ) ),
-			'name'       => $name,
-			'iframe_url' => $iframe,
-			'icon'       => $icon,
-			'categories' => array_values( array_unique( $categories ) ),
-			'slug'       => sanitize_title( (string) ghub_pick( $item, array( 'slug' ) ) ),
+			'source_id'   => trim( (string) ghub_pick( $item, array( 'game_id', 'gameid', 'id' ) ) ),
+			'name'        => $name,
+			'iframe_url'  => $iframe,
+			'icon'        => $icon,
+			'categories'  => array_values( array_unique( $categories ) ),
+			'slug'        => sanitize_title( (string) ghub_pick( $item, array( 'slug' ) ) ),
+			'description' => trim( (string) ghub_pick( $item, array( 'description', 'content', 'about', 'desc', 'summary', 'text' ) ) ),
 		);
 	}
 
@@ -314,6 +315,9 @@ class GameHub_Importer {
 		);
 		if ( $data['slug'] ) {
 			$postarr['post_name'] = $data['slug'];
+		}
+		if ( ! empty( $data['description'] ) ) {
+			$postarr['post_content'] = wp_kses_post( $data['description'] );
 		}
 		if ( $existing ) {
 			$postarr['ID'] = $existing;

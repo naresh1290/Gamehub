@@ -123,11 +123,13 @@
 
 	/* ---- Recently played ---- */
 	function recordRecent() {
-		var head = document.querySelector('.gh-game-head');
-		if (!head) { return; }
-		var name = (head.querySelector('h1') || {}).textContent || document.title;
-		var img = head.querySelector('img');
-		var entry = { name: name.trim(), url: location.pathname, icon: img ? img.src : '' };
+		var p = document.querySelector('.gh-player');
+		if (!p) { return; }
+		var entry = {
+			name: (p.getAttribute('data-title') || document.title || '').trim(),
+			url: location.pathname,
+			icon: p.getAttribute('data-icon') || ''
+		};
 		var list = lsGet('gh-recent') || [];
 		list = list.filter(function (x) { return x.url !== entry.url; });
 		list.unshift(entry);

@@ -31,30 +31,27 @@ while ( have_posts() ) :
 	?>
 	<div class="gh-player-wrap">
 		<div class="gh-container">
-			<div class="gh-game-head">
-				<?php if ( $game['icon'] ) : ?>
-					<img src="<?php echo esc_url( $game['icon'] ); ?>" alt="<?php echo esc_attr( $game['name'] ); ?>" width="68" height="68">
-				<?php endif; ?>
-				<div>
-					<h1><?php echo esc_html( $game['name'] ); ?></h1>
-					<?php if ( $cats ) : ?>
-						<div class="gh-game-cats">
-							<?php
-							foreach ( $cats as $cat ) :
-								$cat_link = get_term_link( $cat );
-								if ( is_wp_error( $cat_link ) ) {
-									continue;
-								}
-								?>
-								<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-				</div>
-			</div>
+			<?php
+			// Games for the side rails around the (reduced) player — desktop only.
+			$rail_games = get_posts(
+				array(
+					'post_type'      => 'game',
+					'post_status'    => 'publish',
+					'posts_per_page' => 16,
+					'post__not_in'   => array( get_the_ID() ),
+					'orderby'        => 'rand',
+					'no_found_rows'  => true,
+				)
+			);
+			$rail_left  = array_slice( $rail_games, 0, 8 );
+			$rail_right = array_slice( $rail_games, 8, 8 );
+			?>
+			<div class="gh-play-layout">
+				<aside class="gh-play-rail" aria-hidden="true">
+					<?php foreach ( $rail_left as $rg ) { gamehub_card( $rg ); } ?>
+				</aside>
 
-			<div class="gh-player-grid no-side">
-				<div>
+				<div class="gh-play-center">
 					<div class="gh-player"
 						data-game-id="<?php echo (int) $game['id']; ?>"
 						data-iframe="<?php echo esc_url( $game['iframe_url'] ); ?>"
@@ -101,6 +98,19 @@ while ( have_posts() ) :
 					</div>
 
 					<div class="gh-player-meta">
+						<?php if ( $cats ) : ?>
+							<span class="gh-game-cats">
+								<?php
+								foreach ( $cats as $cat ) :
+									$cat_link = get_term_link( $cat );
+									if ( is_wp_error( $cat_link ) ) {
+										continue;
+									}
+									?>
+									<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+								<?php endforeach; ?>
+							</span>
+						<?php endif; ?>
 						<span class="gh-rating-static" title="<?php echo esc_attr( sprintf( /* translators: like percentage */ __( '%d%% liked', 'gamehub' ), $game['like_ratio'] ) ); ?>">
 							<span class="gh-rating-value"><?php echo $game['rating_count'] > 0 ? '★ ' . esc_html( number_format_i18n( $game['rating'], 1 ) ) : ''; ?></span>
 							<span class="gh-rating-note"><?php if ( $game['rating_count'] > 0 ) : ?>(<span class="gh-vote-total"><?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?></span> <?php esc_html_e( 'votes', 'gamehub' ); ?>)<?php endif; ?></span>
@@ -109,14 +119,11 @@ while ( have_posts() ) :
 							<span class="gh-rating-note"><?php echo esc_html( gamehub_short_num( $game['plays'] ) ); ?> <?php esc_html_e( 'plays', 'gamehub' ); ?></span>
 						<?php endif; ?>
 					</div>
-
-					<?php
-					$content = get_the_content();
-					if ( trim( wp_strip_all_tags( $content ) ) ) :
-						?>
-						<div class="gh-game-desc"><?php the_content(); ?></div>
-					<?php endif; ?>
 				</div>
+
+				<aside class="gh-play-rail" aria-hidden="true">
+					<?php foreach ( $rail_right as $rg ) { gamehub_card( $rg ); } ?>
+				</aside>
 			</div>
 
 			<?php
@@ -126,7 +133,7 @@ while ( have_posts() ) :
 				$related  = new WP_Query(
 					array(
 						'post_type'      => 'game',
-						'posts_per_page' => 12,
+						'posts_per_page' => 14,
 						'post__not_in'   => array( get_the_ID() ),
 						'orderby'        => 'rand',
 						'no_found_rows'  => true,
@@ -145,7 +152,13 @@ while ( have_posts() ) :
 					wp_reset_postdata();
 				endif;
 			endif;
-			?>
+
+			// Content box below "More like this".
+			$content = get_the_content();
+			if ( trim( wp_strip_all_tags( $content ) ) ) :
+				?>
+				<section class="gh-content"><div class="gh-content-inner gh-game-desc"><?php the_content(); ?></div></section>
+			<?php endif; ?>
 		</div>
 	</div>
 	<?php
