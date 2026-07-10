@@ -54,6 +54,11 @@ class GameHub_Settings {
 			'site_tagline'    => '',
 			'homepage_content' => '', // SEO/content block shown at the bottom of the homepage.
 			'meta_suffix'     => '', // Appended to game + category meta titles site-wide.
+			// AI content generation.
+			'openai_api_key' => '',
+			'openai_model'   => 'gpt-4o-mini',
+			'serpapi_key'    => '',
+
 			// Updates (monorepo shared by all three, distinguished by tag prefix).
 			'github_repo'          => 'naresh1290/Gamehub',
 			'github_repo_theme'    => 'naresh1290/Gamehub',
@@ -132,6 +137,10 @@ class GameHub_Settings {
 		$host                   = trim( (string) preg_replace( '#/.*$#', '', $host ) );
 		$out['icon_cdn_host']   = preg_match( '/^[a-z0-9.-]+$/', $host ) ? $host : '';
 		$out['icon_proxy_path'] = trim( sanitize_title( $input['icon_proxy_path'] ?? 'img' ) ) ?: 'img';
+
+		$out['openai_api_key'] = sanitize_text_field( trim( (string) ( $input['openai_api_key'] ?? '' ) ) );
+		$out['openai_model']   = sanitize_text_field( trim( (string) ( $input['openai_model'] ?? '' ) ) ) ?: 'gpt-4o-mini';
+		$out['serpapi_key']    = sanitize_text_field( trim( (string) ( $input['serpapi_key'] ?? '' ) ) );
 
 		$out['github_repo']           = sanitize_text_field( trim( (string) ( $input['github_repo'] ?? '' ) ) );
 		$out['github_repo_theme']     = sanitize_text_field( trim( (string) ( $input['github_repo_theme'] ?? '' ) ) );
@@ -295,6 +304,10 @@ class GameHub_Settings {
 							);
 							?>
 							<p class="description"><?php esc_html_e( 'Shown in the content section at the bottom of the homepage. Start with an H1 (this is the homepage heading).', 'gamehub-engine' ); ?></p>
+							<p>
+								<button type="button" class="button" id="ghub-generate-home" data-ghub-generate-home>✨ <?php esc_html_e( 'Generate with AI', 'gamehub-engine' ); ?></button>
+								<span class="ghub-gen-status" id="ghub-home-status" style="margin-left:8px;color:#646970"></span>
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -345,6 +358,43 @@ class GameHub_Settings {
 								?>
 							</p>
 						</td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'AI content generation', 'gamehub-engine' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="ghub_openai_key"><?php esc_html_e( 'OpenAI API key', 'gamehub-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="ghub_openai_key" class="regular-text code" name="<?php echo esc_attr( self::OPTION ); ?>[openai_api_key]" value="<?php echo esc_attr( $s['openai_api_key'] ); ?>" autocomplete="new-password" placeholder="sk-…">
+							<p class="description"><?php esc_html_e( 'Used to generate content for games, categories, and the homepage.', 'gamehub-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ghub_openai_model"><?php esc_html_e( 'GPT model', 'gamehub-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="ghub_openai_model" class="regular-text code" name="<?php echo esc_attr( self::OPTION ); ?>[openai_model]" value="<?php echo esc_attr( $s['openai_model'] ); ?>" list="ghub_openai_models" placeholder="gpt-4o-mini">
+							<datalist id="ghub_openai_models">
+								<option value="gpt-4o-mini"></option>
+								<option value="gpt-4o"></option>
+								<option value="gpt-4.1-mini"></option>
+								<option value="gpt-4.1"></option>
+								<option value="gpt-4-turbo"></option>
+								<option value="gpt-3.5-turbo"></option>
+							</datalist>
+							<p class="description"><?php esc_html_e( 'Any OpenAI chat model id. gpt-4o-mini is a good, low-cost default.', 'gamehub-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ghub_serpapi"><?php esc_html_e( 'SerpApi key', 'gamehub-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="ghub_serpapi" class="regular-text code" name="<?php echo esc_attr( self::OPTION ); ?>[serpapi_key]" value="<?php echo esc_attr( $s['serpapi_key'] ); ?>" autocomplete="new-password">
+							<p class="description"><?php esc_html_e( 'Optional. When set, the top Google results for each game/category are used as reference. Get a key at serpapi.com.', 'gamehub-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Bulk generate', 'gamehub-engine' ); ?></th>
+						<td><a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=game&page=gamehub-ai' ) ); ?>"><?php esc_html_e( 'Open AI Content generator →', 'gamehub-engine' ); ?></a></td>
 					</tr>
 				</table>
 
