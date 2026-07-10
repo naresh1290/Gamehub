@@ -132,49 +132,24 @@
 		}
 		paint(lsGet(voteKey));
 
+		// The derived rating (★ x.x) recomputes from likes/dislikes on the server.
+		var ratingValueEl = document.querySelector('.gh-rating-value');
+		var voteTotalEl = document.querySelector('.gh-vote-total');
+
 		function cast(action) {
 			post('/games/' + gid + '/' + action, {}).then(function (res) {
 				if (bar.querySelector('.gh-like-count')) { bar.querySelector('.gh-like-count').textContent = shortNum(res.likes); }
 				if (bar.querySelector('.gh-dislike-count')) { bar.querySelector('.gh-dislike-count').textContent = shortNum(res.dislikes); }
+				if (ratingValueEl && typeof res.rating !== 'undefined') {
+					ratingValueEl.textContent = res.rating_count > 0 ? ('★ ' + (Math.round(res.rating * 10) / 10)) : '';
+				}
+				if (voteTotalEl && typeof res.rating_count !== 'undefined') { voteTotalEl.textContent = shortNum(res.rating_count); }
 				lsSet(voteKey, res.user_vote);
 				paint(res.user_vote);
 			}).catch(function () {});
 		}
 		if (likeBtn) { likeBtn.addEventListener('click', function () { cast('like'); }); }
 		if (dislikeBtn) { dislikeBtn.addEventListener('click', function () { cast('dislike'); }); }
-	})();
-
-	/* ---- Star rating ---- */
-	(function rating() {
-		var el = document.querySelector('.gh-rating');
-		if (!el) { return; }
-		var bar = document.querySelector('.gh-actions');
-		var gid = bar ? parseInt(bar.getAttribute('data-game-id'), 10) : 0;
-		if (!gid) { return; }
-		var stars = Array.prototype.slice.call(el.querySelectorAll('button'));
-		var note = el.querySelector('.gh-rating-note');
-		var mine = lsGet('gh-rating-' + gid) || 0;
-
-		function paint(n) {
-			stars.forEach(function (s) {
-				s.classList.toggle('on', parseInt(s.getAttribute('data-value'), 10) <= n);
-			});
-		}
-		paint(mine);
-
-		stars.forEach(function (s) {
-			var val = parseInt(s.getAttribute('data-value'), 10);
-			s.addEventListener('mouseenter', function () { paint(val); });
-			s.addEventListener('click', function () {
-				post('/games/' + gid + '/rate', { rating: val }).then(function (res) {
-					mine = val;
-					lsSet('gh-rating-' + gid, val);
-					if (note) { note.textContent = (Math.round(res.rating * 10) / 10) + ' (' + shortNum(res.rating_count) + ')'; }
-					paint(val);
-				}).catch(function () {});
-			});
-		});
-		el.addEventListener('mouseleave', function () { paint(mine); });
 	})();
 
 	function shortNum(n) {

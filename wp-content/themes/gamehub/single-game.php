@@ -78,15 +78,9 @@ while ( have_posts() ) :
 							<span class="gh-dislike-count"><?php echo esc_html( gamehub_short_num( $game['dislikes'] ) ); ?></span>
 						</button>
 
-						<span class="gh-rating" data-rating="<?php echo esc_attr( $game['rating'] ); ?>">
-							<?php for ( $i = 1; $i <= 5; $i++ ) : ?>
-								<button type="button" data-value="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: star value */ __( 'Rate %d', 'gamehub' ), $i ) ); ?>">★</button>
-							<?php endfor; ?>
-							<span class="gh-rating-note">
-								<?php if ( $game['rating'] > 0 ) : ?>
-									<?php echo esc_html( number_format_i18n( $game['rating'], 1 ) ); ?> (<?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?>)
-								<?php endif; ?>
-							</span>
+						<span class="gh-rating-static" title="<?php echo esc_attr( sprintf( /* translators: like percentage */ __( '%d%% liked', 'gamehub' ), $game['like_ratio'] ) ); ?>">
+							<span class="gh-rating-value"><?php echo $game['rating_count'] > 0 ? '★ ' . esc_html( number_format_i18n( $game['rating'], 1 ) ) : ''; ?></span>
+							<span class="gh-rating-note"><?php if ( $game['rating_count'] > 0 ) : ?>(<span class="gh-vote-total"><?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?></span> <?php esc_html_e( 'votes', 'gamehub' ); ?>)<?php endif; ?></span>
 						</span>
 
 						<?php if ( $game['plays'] > 0 ) : ?>

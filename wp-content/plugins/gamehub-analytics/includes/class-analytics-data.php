@@ -123,9 +123,10 @@ class GameHub_Analytics_Data {
 		$limit = max( 1, min( 500, (int) $limit ) );
 		$posts = $wpdb->posts;
 
-		$range_metrics = array( 'plays', 'visits', 'likes', 'dislikes' );
-
-		if ( in_array( $report, $range_metrics, true ) || 'trending' === $report ) {
+		// Plays/visits are cumulative events → summed over the date range.
+		// Likes/dislikes/rating are stateful (net, one per visitor) → read the
+		// current unique totals from the stats table so they match each game.
+		if ( in_array( $report, array( 'plays', 'visits' ), true ) || 'trending' === $report ) {
 			$metric = 'trending' === $report ? 'plays' : $report;
 			$rows   = $wpdb->get_results(
 				$wpdb->prepare(
@@ -143,14 +144,29 @@ class GameHub_Analytics_Data {
 				),
 				ARRAY_A
 			);
-		} elseif ( 'rating' === $report ) {
+		} elseif ( 'likes' === $report || 'dislikes' === $report ) {
+			$col  = $report;
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT s.post_id, ROUND(s.rating_sum / s.rating_count, 2) AS metric
+					"SELECT s.post_id, s.$col AS metric
 					 FROM $stats s
 					 INNER JOIN $posts p ON p.ID = s.post_id AND p.post_type = 'game'
-					 WHERE s.rating_count > 0
-					 ORDER BY metric DESC, s.rating_count DESC
+					 WHERE s.$col > 0
+					 ORDER BY metric DESC
+					 LIMIT %d",
+					$limit
+				),
+				ARRAY_A
+			);
+		} elseif ( 'rating' === $report ) {
+			// Derived: like share of total votes, on a 0-5 scale.
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT s.post_id, ROUND(s.likes / (s.likes + s.dislikes) * 5, 2) AS metric
+					 FROM $stats s
+					 INNER JOIN $posts p ON p.ID = s.post_id AND p.post_type = 'game'
+					 WHERE (s.likes + s.dislikes) > 0
+					 ORDER BY metric DESC, (s.likes + s.dislikes) DESC
 					 LIMIT %d",
 					$limit
 				),
@@ -177,7 +193,8 @@ class GameHub_Analytics_Data {
 		foreach ( (array) $rows as $r ) {
 			$pid    = (int) $r['post_id'];
 			$life   = GameHub_Stats::get( $pid );
-			$rating = $life['rating_count'] > 0 ? round( $life['rating_sum'] / $life['rating_count'], 2 ) : 0;
+			$votes  = (int) $life['likes'] + (int) $life['dislikes'];
+			$rating = $votes > 0 ? round( $life['likes'] / $votes * 5, 2 ) : 0;
 			$out[]  = array(
 				'post_id'     => $pid,
 				'name'        => get_the_title( $pid ),

@@ -293,7 +293,11 @@ function ghub_get_game( $post ) {
 	$thumb     = get_the_post_thumbnail_url( $post->ID, 'large' );
 	$icon_src  = $icon ? $icon : ( $thumb ? $thumb : '' );
 	$terms     = wp_get_post_terms( $post->ID, 'game_category', array( 'fields' => 'names' ) );
-	$rating    = ( $stats['rating_count'] > 0 ) ? round( $stats['rating_sum'] / $stats['rating_count'], 2 ) : 0.0;
+	// Rating is derived from likes vs dislikes — no separate rating input.
+	$likes     = (int) $stats['likes'];
+	$dislikes  = (int) $stats['dislikes'];
+	$votes     = $likes + $dislikes;
+	$rating    = $votes > 0 ? round( $likes / $votes * 5, 2 ) : 0.0;
 	$avg_sess  = ( $stats['session_count'] > 0 ) ? (int) round( $stats['session_seconds'] / $stats['session_count'] ) : 0;
 
 	return array(
@@ -309,10 +313,11 @@ function ghub_get_game( $post ) {
 		'categories'      => is_wp_error( $terms ) ? array() : $terms,
 		'plays'           => (int) $stats['plays'],
 		'visits'          => (int) $stats['visits'],
-		'likes'           => (int) $stats['likes'],
-		'dislikes'        => (int) $stats['dislikes'],
+		'likes'           => $likes,
+		'dislikes'        => $dislikes,
 		'rating'          => (float) $rating,
-		'rating_count'    => (int) $stats['rating_count'],
+		'rating_count'    => $votes,
+		'like_ratio'      => $votes > 0 ? (int) round( $likes / $votes * 100 ) : 0,
 		'avg_session'     => $avg_sess,
 	);
 }

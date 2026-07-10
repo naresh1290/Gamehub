@@ -99,24 +99,6 @@ class GameHub_REST {
 
 		register_rest_route(
 			self::NS,
-			'/games/(?P<id>\d+)/rate',
-			array(
-				'methods'             => 'POST',
-				'permission_callback' => '__return_true',
-				'args'                => $id_arg + array(
-					'rating' => array(
-						'required'          => true,
-						'validate_callback' => static function ( $v ) {
-							return is_numeric( $v ) && (int) $v >= 1 && (int) $v <= 5;
-						},
-					),
-				),
-				'callback'            => array( $this, 'rate' ),
-			)
-		);
-
-		register_rest_route(
-			self::NS,
 			'/games/(?P<id>\d+)/session',
 			array(
 				'methods'             => 'POST',
@@ -209,18 +191,9 @@ class GameHub_REST {
 		$current     = GameHub_Stats::get_vote( $post->ID, $voter );
 		$prev        = $current['vote'] ?? '';
 
-		// Re-clicking the same vote is a no-op (idempotent).
+		// Re-clicking the same vote is a no-op (idempotent) — one vote per visitor.
 		if ( $prev === $vote ) {
-			$stats = GameHub_Stats::get( $post->ID );
-			return new WP_REST_Response(
-				array(
-					'ok'        => true,
-					'changed'   => false,
-					'user_vote' => $vote,
-					'likes'     => (int) $stats['likes'],
-					'dislikes'  => (int) $stats['dislikes'],
-				)
-			);
+			return $this->vote_response( $vote, false, GameHub_Stats::get( $post->ID ) );
 		}
 
 		$like_delta    = 0;
@@ -259,67 +232,33 @@ class GameHub_REST {
 		}
 
 		GameHub_Stats::apply_vote_delta( $post->ID, $like_delta, $dislike_delta );
-		$stats = GameHub_Stats::get( $post->ID );
 
-		return new WP_REST_Response(
-			array(
-				'ok'        => true,
-				'changed'   => true,
-				'user_vote' => $vote,
-				'likes'     => (int) $stats['likes'],
-				'dislikes'  => (int) $stats['dislikes'],
-			)
-		);
+		return $this->vote_response( $vote, true, GameHub_Stats::get( $post->ID ) );
 	}
 
 	/**
-	 * Per-voter 1-5 star rating (replaces the voter's previous rating).
+	 * Uniform like/dislike response including the derived rating.
+	 *
+	 * @param string $user_vote Current voter's vote.
+	 * @param bool   $changed   Whether counts changed.
+	 * @param array  $stats     Fresh stats row.
+	 * @return WP_REST_Response
 	 */
-	public function rate( $req ) {
-		$post = $this->resolve_game( $req );
-		if ( ! $post ) {
-			return new WP_REST_Response( array( 'error' => 'not_found' ), 404 );
-		}
-		$rating = (int) $req->get_param( 'rating' );
-
-		global $wpdb;
-		$votes_table = GameHub_Stats::votes_table();
-		$voter       = ghub_voter_hash();
-		$current     = GameHub_Stats::get_vote( $post->ID, $voter );
-		$prev_rating = (int) ( $current['rating'] ?? 0 );
-
-		if ( $current ) {
-			$wpdb->update(
-				$votes_table,
-				array( 'rating' => $rating, 'updated_at' => current_time( 'mysql' ) ),
-				array( 'id' => (int) $current['id'] ),
-				array( '%d', '%s' ),
-				array( '%d' )
-			);
-		} else {
-			$wpdb->insert(
-				$votes_table,
-				array(
-					'post_id'    => $post->ID,
-					'voter_hash' => $voter,
-					'rating'     => $rating,
-					'created_at' => current_time( 'mysql' ),
-					'updated_at' => current_time( 'mysql' ),
-				),
-				array( '%d', '%s', '%d', '%s', '%s' )
-			);
-		}
-
-		GameHub_Stats::apply_rating( $post->ID, $rating, $prev_rating );
-		$stats   = GameHub_Stats::get( $post->ID );
-		$average = $stats['rating_count'] > 0 ? round( $stats['rating_sum'] / $stats['rating_count'], 2 ) : 0;
+	private function vote_response( $user_vote, $changed, $stats ) {
+		$likes    = (int) $stats['likes'];
+		$dislikes = (int) $stats['dislikes'];
+		$votes    = $likes + $dislikes;
 
 		return new WP_REST_Response(
 			array(
 				'ok'           => true,
-				'user_rating'  => $rating,
-				'rating'       => (float) $average,
-				'rating_count' => (int) $stats['rating_count'],
+				'changed'      => (bool) $changed,
+				'user_vote'    => $user_vote,
+				'likes'        => $likes,
+				'dislikes'     => $dislikes,
+				'rating'       => $votes > 0 ? round( $likes / $votes * 5, 2 ) : 0,
+				'rating_count' => $votes,
+				'like_ratio'   => $votes > 0 ? (int) round( $likes / $votes * 100 ) : 0,
 			)
 		);
 	}

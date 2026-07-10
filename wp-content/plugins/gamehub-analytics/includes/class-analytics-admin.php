@@ -131,8 +131,8 @@ class GameHub_Analytics_Admin {
 				<?php
 				$this->scorecard( __( 'Plays', 'gamehub-analytics' ), number_format_i18n( $summary['plays'] ), sprintf( __( '%s lifetime', 'gamehub-analytics' ), number_format_i18n( $life['plays'] ?? 0 ) ) );
 				$this->scorecard( __( 'Visits', 'gamehub-analytics' ), number_format_i18n( $summary['visits'] ), sprintf( __( '%s lifetime', 'gamehub-analytics' ), number_format_i18n( $life['visits'] ?? 0 ) ) );
-				$this->scorecard( __( 'Likes', 'gamehub-analytics' ), number_format_i18n( $summary['likes'] ), '👍' );
-				$this->scorecard( __( 'Dislikes', 'gamehub-analytics' ), number_format_i18n( $summary['dislikes'] ), '👎' );
+				$this->scorecard( __( 'Likes', 'gamehub-analytics' ), number_format_i18n( $life['likes'] ?? 0 ), __( 'unique, all-time', 'gamehub-analytics' ) );
+				$this->scorecard( __( 'Dislikes', 'gamehub-analytics' ), number_format_i18n( $life['dislikes'] ?? 0 ), __( 'unique, all-time', 'gamehub-analytics' ) );
 				$this->scorecard( __( 'Sessions', 'gamehub-analytics' ), number_format_i18n( $summary['session_count'] ), __( 'play sessions', 'gamehub-analytics' ) );
 				$this->scorecard( __( 'Avg session', 'gamehub-analytics' ), self::fmt_duration( $summary['avg_session'] ), __( 'time in game', 'gamehub-analytics' ) );
 				?>
@@ -154,7 +154,6 @@ class GameHub_Analytics_Admin {
 						$metrics = array(
 							'plays'           => __( 'Plays', 'gamehub-analytics' ),
 							'visits'          => __( 'Visits', 'gamehub-analytics' ),
-							'likes'           => __( 'Likes', 'gamehub-analytics' ),
 							'session_seconds' => __( 'Playtime', 'gamehub-analytics' ),
 						);
 						foreach ( $metrics as $k => $lab ) {
