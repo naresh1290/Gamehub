@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.3.9' );
+define( 'GAMEHUB_THEME_VERSION', '1.4.0' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.

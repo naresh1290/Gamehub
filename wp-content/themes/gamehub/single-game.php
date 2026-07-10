@@ -42,7 +42,7 @@ while ( have_posts() ) :
 				'post_status'    => 'publish',
 				'posts_per_page' => 30,
 				'post__not_in'   => $exclude,
-				'orderby'        => 'rand',
+				'ghub_order'     => 'popular',
 				'no_found_rows'  => true,
 				'tax_query'      => array(
 					array( 'taxonomy' => 'game_category', 'field' => 'term_id', 'terms' => wp_list_pluck( $cats, 'term_id' ) ),
@@ -60,7 +60,7 @@ while ( have_posts() ) :
 					'post_status'    => 'publish',
 					'posts_per_page' => 30 - count( $around ),
 					'post__not_in'   => $exclude,
-					'orderby'        => 'rand',
+					'ghub_order'     => 'popular',
 					'no_found_rows'  => true,
 				)
 			)

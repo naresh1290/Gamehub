@@ -105,6 +105,10 @@ function gamehub_categories() {
 	if ( ! taxonomy_exists( 'game_category' ) ) {
 		return array();
 	}
+	// Most-popular categories first (by total plays), when the engine is active.
+	if ( function_exists( 'ghub_categories_by_popularity' ) ) {
+		return ghub_categories_by_popularity();
+	}
 	$terms = get_terms( array( 'taxonomy' => 'game_category', 'hide_empty' => true, 'orderby' => 'count', 'order' => 'DESC' ) );
 	return is_wp_error( $terms ) ? array() : $terms;
 }

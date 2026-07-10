@@ -51,6 +51,7 @@ get_header();
 				'post_type'      => 'game',
 				'posts_per_page' => 12,
 				'no_found_rows'  => true,
+				'ghub_order'     => 'popular',
 				'tax_query'      => array(
 					array( 'taxonomy' => 'game_category', 'field' => 'term_id', 'terms' => $cat->term_id ),
 				),

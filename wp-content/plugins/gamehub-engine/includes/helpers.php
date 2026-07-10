@@ -276,6 +276,78 @@ function ghub_proxy_icon_url( $url ) {
 }
 
 /**
+ * Order game queries by "top played and highest rated first".
+ *
+ * Applies to any WP_Query flagged with `ghub_order => 'popular'`, and to the
+ * main game archive / category pages by default (unless ?sort=new is set).
+ *
+ * @param array    $clauses SQL clauses.
+ * @param WP_Query $query   Query.
+ * @return array
+ */
+function ghub_popular_order_clauses( $clauses, $query ) {
+	$apply = false;
+	if ( 'popular' === $query->get( 'ghub_order' ) ) {
+		$apply = true;
+	} elseif ( ! is_admin() && $query->is_main_query() && ( $query->is_post_type_archive( 'game' ) || $query->is_tax( 'game_category' ) ) ) {
+		$sort = isset( $_GET['sort'] ) ? sanitize_key( wp_unslash( $_GET['sort'] ) ) : '';
+		if ( 'new' !== $sort ) {
+			$apply = true;
+		}
+	}
+	if ( ! $apply ) {
+		return $clauses;
+	}
+
+	global $wpdb;
+	$stats = $wpdb->prefix . 'gh_stats';
+	if ( false === strpos( $clauses['join'], ' ghs ' ) ) {
+		$clauses['join'] .= " LEFT JOIN $stats ghs ON ghs.post_id = {$wpdb->posts}.ID ";
+	}
+	$clauses['orderby'] =
+		'COALESCE(ghs.plays,0) DESC, ' .
+		'(COALESCE(ghs.likes,0) / NULLIF(COALESCE(ghs.likes,0) + COALESCE(ghs.dislikes,0), 0)) DESC, ' .
+		'COALESCE(ghs.likes,0) DESC, ' .
+		"{$wpdb->posts}.post_title ASC";
+	return $clauses;
+}
+add_filter( 'posts_clauses', 'ghub_popular_order_clauses', 10, 2 );
+
+/**
+ * Game category terms ordered by total plays, then game count — popular first.
+ *
+ * @param int $limit Max terms (0 = all).
+ * @return WP_Term[]
+ */
+function ghub_categories_by_popularity( $limit = 0 ) {
+	global $wpdb;
+	$stats = $wpdb->prefix . 'gh_stats';
+	$sql   = "
+		SELECT tt.term_id, SUM(COALESCE(s.plays,0)) AS plays, COUNT(p.ID) AS games
+		FROM {$wpdb->term_taxonomy} tt
+		INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+		INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id AND p.post_type = 'game' AND p.post_status = 'publish'
+		LEFT JOIN $stats s ON s.post_id = p.ID
+		WHERE tt.taxonomy = 'game_category'
+		GROUP BY tt.term_id
+		ORDER BY plays DESC, games DESC, MIN(tt.term_id) ASC
+	";
+	if ( $limit > 0 ) {
+		$sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+	}
+
+	$rows  = $wpdb->get_results( $sql );
+	$terms = array();
+	foreach ( (array) $rows as $row ) {
+		$term = get_term( (int) $row->term_id, 'game_category' );
+		if ( $term && ! is_wp_error( $term ) ) {
+			$terms[] = $term;
+		}
+	}
+	return $terms;
+}
+
+/**
  * Fetch and shape the public-facing data for a single game post.
  *
  * @param int|WP_Post $post Post or ID.
