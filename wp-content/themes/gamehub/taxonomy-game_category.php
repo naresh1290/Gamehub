@@ -15,14 +15,6 @@ $term = get_queried_object();
 ?>
 <section class="gh-section">
 	<div class="gh-container">
-		<?php
-		gamehub_breadcrumbs(
-			array(
-				array( 'name' => __( 'Home', 'gamehub' ), 'url' => home_url( '/' ) ),
-				array( 'name' => $term->name ),
-			)
-		);
-		?>
 		<div class="gh-section-head">
 			<h1><?php echo esc_html( $term->name ); ?></h1>
 		</div>
@@ -52,6 +44,12 @@ $term = get_queried_object();
 		<?php endif; ?>
 
 		<?php
+			gamehub_breadcrumbs(
+				array(
+					array( 'name' => __( 'Home', 'gamehub' ), 'url' => home_url( '/' ) ),
+					array( 'name' => $term->name ),
+				)
+			);
 		if ( $term && ! empty( $term->description ) ) {
 			gamehub_content_section( $term->description );
 		}
