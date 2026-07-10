@@ -16,15 +16,17 @@ $is_search = is_search();
 <section class="gh-section">
 	<div class="gh-container">
 		<div class="gh-section-head">
-			<h2>
+			<h1>
 				<?php
 				if ( $is_search ) {
 					printf( /* translators: search term */ esc_html__( 'Results for “%s”', 'gamehub' ), esc_html( get_search_query() ) );
+				} elseif ( isset( $_GET['sort'] ) && 'new' === sanitize_key( wp_unslash( $_GET['sort'] ) ) ) {
+					esc_html_e( 'New Games', 'gamehub' );
 				} else {
-					esc_html_e( 'All games', 'gamehub' );
+					esc_html_e( 'All Games', 'gamehub' );
 				}
 				?>
-			</h2>
+			</h1>
 		</div>
 
 		<?php if ( have_posts() ) : ?>

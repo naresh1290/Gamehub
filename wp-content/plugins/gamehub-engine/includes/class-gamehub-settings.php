@@ -52,6 +52,7 @@ class GameHub_Settings {
 			// Branding.
 			'site_tagline'    => '',
 			'homepage_content' => '', // SEO/content block shown at the bottom of the homepage.
+			'meta_suffix'     => '', // Appended to game + category meta titles site-wide.
 			// Updates (monorepo shared by all three, distinguished by tag prefix).
 			'github_repo'          => 'naresh1290/Gamehub',
 			'github_repo_theme'    => 'naresh1290/Gamehub',
@@ -121,6 +122,7 @@ class GameHub_Settings {
 		$out['proxy_origin']     = esc_url_raw( trim( (string) ( $input['proxy_origin'] ?? '' ) ) );
 		$out['site_tagline']     = sanitize_text_field( $input['site_tagline'] ?? '' );
 		$out['homepage_content'] = wp_kses_post( $input['homepage_content'] ?? '' );
+		$out['meta_suffix']      = sanitize_text_field( $input['meta_suffix'] ?? '' );
 
 		$out['icon_proxy']      = empty( $input['icon_proxy'] ) ? 0 : 1;
 		// Store bare host only (strip scheme/path if pasted).
@@ -280,6 +282,21 @@ class GameHub_Settings {
 						<td>
 							<textarea id="ghub_home_content" name="<?php echo esc_attr( self::OPTION ); ?>[homepage_content]" rows="6" class="large-text"><?php echo esc_textarea( $s['homepage_content'] ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'SEO / intro text shown in the content section at the bottom of the homepage. Basic HTML allowed.', 'gamehub-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ghub_meta_suffix"><?php esc_html_e( 'Meta title suffix', 'gamehub-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="ghub_meta_suffix" class="large-text" name="<?php echo esc_attr( self::OPTION ); ?>[meta_suffix]" value="<?php echo esc_attr( $s['meta_suffix'] ); ?>" placeholder="<?php esc_attr_e( ' - Play Free Online', 'gamehub-engine' ); ?>">
+							<p class="description">
+								<?php
+								printf(
+									/* translators: example title */
+									esc_html__( 'Appended to every game and category page title. e.g. a game becomes %s. Include your own separator.', 'gamehub-engine' ),
+									'<code>' . esc_html__( 'Subway Surfers - Play Free Online', 'gamehub-engine' ) . '</code>'
+								);
+								?>
+							</p>
 						</td>
 					</tr>
 				</table>

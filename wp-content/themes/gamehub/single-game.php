@@ -71,29 +71,6 @@ while ( have_posts() ) :
 	<div class="gh-player-wrap">
 		<div class="gh-container">
 
-			<div class="gh-play-meta">
-				<?php if ( $cats ) : ?>
-					<span class="gh-game-cats">
-						<?php
-						foreach ( $cats as $cat ) :
-							$cat_link = get_term_link( $cat );
-							if ( is_wp_error( $cat_link ) ) {
-								continue;
-							}
-							?>
-							<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
-						<?php endforeach; ?>
-					</span>
-				<?php endif; ?>
-				<span class="gh-rating-static" title="<?php echo esc_attr( sprintf( /* translators: like percentage */ __( '%d%% liked', 'gamehub' ), $game['like_ratio'] ) ); ?>">
-					<span class="gh-rating-value"><?php echo $game['rating_count'] > 0 ? '★ ' . esc_html( number_format_i18n( $game['rating'], 1 ) ) : ''; ?></span>
-					<span class="gh-rating-note"><?php if ( $game['rating_count'] > 0 ) : ?>(<span class="gh-vote-total"><?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?></span> <?php esc_html_e( 'votes', 'gamehub' ); ?>)<?php endif; ?></span>
-				</span>
-				<?php if ( $game['plays'] > 0 ) : ?>
-					<span class="gh-rating-note"><?php echo esc_html( gamehub_short_num( $game['plays'] ) ); ?> <?php esc_html_e( 'plays', 'gamehub' ); ?></span>
-				<?php endif; ?>
-			</div>
-
 			<div class="gh-play-top">
 				<div class="gh-play-center">
 					<div class="gh-player"
@@ -119,7 +96,7 @@ while ( have_posts() ) :
 						<div class="gh-player-bar">
 							<div class="gh-pb-left">
 								<?php if ( $game['icon'] ) : ?><img src="<?php echo esc_url( $game['icon'] ); ?>" alt="" width="30" height="30"><?php endif; ?>
-								<span class="gh-pb-name"><?php echo esc_html( $game['name'] ); ?></span>
+								<h1 class="gh-pb-name"><?php echo esc_html( $game['name'] ); ?></h1>
 							</div>
 							<div class="gh-pb-right gh-actions" data-game-id="<?php echo (int) $game['id']; ?>">
 								<button type="button" class="gh-pb-btn gh-like" data-action="like" aria-label="<?php esc_attr_e( 'Like', 'gamehub' ); ?>">

@@ -16,7 +16,7 @@ $term = get_queried_object();
 <section class="gh-section">
 	<div class="gh-container">
 		<div class="gh-section-head">
-			<h2><?php echo esc_html( $term->name ); ?></h2>
+			<h1><?php echo esc_html( $term->name ); ?></h1>
 		</div>
 
 		<?php if ( have_posts() ) : ?>

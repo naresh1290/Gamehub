@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.2.4' );
+define( 'GAMEHUB_THEME_VERSION', '1.2.5' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.
@@ -65,6 +65,41 @@ function gamehub_asset_ver( $rel ) {
 	$path = get_template_directory() . '/' . ltrim( $rel, '/' );
 	return file_exists( $path ) ? GAMEHUB_THEME_VERSION . '.' . filemtime( $path ) : GAMEHUB_THEME_VERSION;
 }
+
+/* SEO meta titles ------------------------------------------------------ */
+add_filter(
+	'pre_get_document_title',
+	function ( $title ) {
+		$site = get_bloginfo( 'name' );
+
+		$suffix  = '';
+		$tagline = get_bloginfo( 'description' );
+		if ( class_exists( 'GameHub_Settings' ) ) {
+			$s       = GameHub_Settings::get();
+			$suffix  = (string) ( $s['meta_suffix'] ?? '' );
+			$tagline = ! empty( $s['site_tagline'] ) ? $s['site_tagline'] : $tagline;
+		}
+
+		if ( is_front_page() ) {
+			return $tagline ? ( $site . ' - ' . $tagline ) : $site;
+		}
+		if ( is_singular( 'game' ) ) {
+			return get_the_title() . $suffix;
+		}
+		if ( is_tax( 'game_category' ) ) {
+			$term = get_queried_object();
+			return ( $term ? $term->name : __( 'Games', 'gamehub' ) ) . $suffix;
+		}
+		if ( is_post_type_archive( 'game' ) ) {
+			$is_new = isset( $_GET['sort'] ) && 'new' === sanitize_key( wp_unslash( $_GET['sort'] ) );
+			return $is_new
+				? sprintf( /* translators: site name */ __( 'New Games - Play Now on %s', 'gamehub' ), $site )
+				: sprintf( /* translators: site name */ __( 'Checkout All Available Games on %s', 'gamehub' ), $site );
+		}
+		return $title;
+	},
+	20
+);
 
 /* Body classes for the player page ------------------------------------- */
 add_filter(
