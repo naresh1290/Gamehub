@@ -245,24 +245,30 @@ function ghub_proxy_icon_url( $url ) {
 		return '';
 	}
 
-	$s = GameHub_Settings::get();
-	if ( empty( $s['icon_proxy'] ) ) {
-		return $url;
+	$s          = GameHub_Settings::get();
+	$cdn        = strtolower( trim( (string) ( $s['icon_cdn_host'] ?? '' ) ) );
+	$proxy_on   = ! empty( $s['icon_proxy'] );
+	$proxy_path = '/' . trim( (string) ( $s['icon_proxy_path'] ?? 'img' ), '/' ) . '/';
+
+	// Case 1: a root-relative path (e.g. "/cdn-cgi/image/.../logo.png") — the feed
+	// gives only the path; the CDN host is implicit.
+	if ( '/' === $url[0] && '//' !== substr( $url, 0, 2 ) ) {
+		if ( $proxy_on ) {
+			return home_url( $proxy_path . ltrim( $url, '/' ) );
+		}
+		return $cdn ? 'https://' . $cdn . $url : $url;
 	}
 
-	$cdn = strtolower( trim( (string) ( $s['icon_cdn_host'] ?? '' ) ) );
-	if ( '' === $cdn ) {
+	// Case 2/3: an absolute URL — only rewrite when it points at the CDN host.
+	if ( ! $proxy_on || '' === $cdn ) {
 		return $url;
 	}
-
 	$parts = wp_parse_url( $url );
 	if ( empty( $parts['host'] ) || strtolower( (string) $parts['host'] ) !== $cdn ) {
 		return $url;
 	}
-
-	$proxy_path = '/' . trim( (string) ( $s['icon_proxy_path'] ?? 'img' ), '/' ) . '/';
-	$path       = isset( $parts['path'] ) ? ltrim( (string) $parts['path'], '/' ) : '';
-	$out        = home_url( $proxy_path . $path );
+	$path = isset( $parts['path'] ) ? ltrim( (string) $parts['path'], '/' ) : '';
+	$out  = home_url( $proxy_path . $path );
 	if ( ! empty( $parts['query'] ) ) {
 		$out .= '?' . $parts['query'];
 	}

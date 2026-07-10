@@ -22,7 +22,12 @@ while ( have_posts() ) :
 	}
 
 	$cats = get_the_terms( get_the_ID(), 'game_category' );
-	$cats = is_wp_error( $cats ) ? array() : (array) $cats;
+	$cats = ( is_wp_error( $cats ) || ! $cats ) ? array() : array_filter(
+		(array) $cats,
+		static function ( $t ) {
+			return $t instanceof WP_Term;
+		}
+	);
 	?>
 	<div class="gh-player-wrap">
 		<div class="gh-container">
@@ -34,8 +39,14 @@ while ( have_posts() ) :
 					<h1><?php echo esc_html( $game['name'] ); ?></h1>
 					<?php if ( $cats ) : ?>
 						<div class="gh-game-cats">
-							<?php foreach ( $cats as $cat ) : ?>
-								<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+							<?php
+							foreach ( $cats as $cat ) :
+								$cat_link = get_term_link( $cat );
+								if ( is_wp_error( $cat_link ) ) {
+									continue;
+								}
+								?>
+								<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
 							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>

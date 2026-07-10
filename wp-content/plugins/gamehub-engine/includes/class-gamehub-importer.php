@@ -144,7 +144,24 @@ class GameHub_Importer {
 		}
 
 		$this->finalize( $options, $stats, $seen_ids );
+
+		// Reflect new/updated games immediately by clearing page + object caches.
+		if ( $stats['inserted'] || $stats['updated'] || $stats['deactivated'] ) {
+			$this->purge_caches();
+		}
 		return $stats;
+	}
+
+	/**
+	 * Flush object cache and trigger a full page-cache purge (nginx-helper /
+	 * Webinoly FastCGI cache), so imported games appear without waiting for TTL.
+	 */
+	private function purge_caches() {
+		if ( function_exists( 'wp_cache_flush' ) ) {
+			wp_cache_flush();
+		}
+		// nginx-helper listens for this and purges the FastCGI/Redis page cache.
+		do_action( 'rt_nginx_helper_purge_all' );
 	}
 
 	/* -------------------------------------------------------------------- */
@@ -170,7 +187,7 @@ class GameHub_Importer {
 	private function map_item( $item ) {
 		$name   = trim( (string) ghub_pick( $item, array( 'gamename', 'name', 'title' ) ) );
 		$iframe = trim( (string) ghub_pick( $item, array( 'iframeurl', 'gameurl', 'game_url', 'url', 'embed' ) ) );
-		$icon   = trim( (string) ghub_pick( $item, array( 'icon', 'iconurl', 'icon_url', 'image', 'thumbnail', 'thumb' ) ) );
+		$icon   = trim( (string) ghub_pick( $item, array( 'gameicon', 'game_icon', 'icon', 'iconurl', 'icon_url', 'image', 'thumbnail', 'thumb' ) ) );
 
 		// "1 + 2 = 3 – 155 thousand plays – play Playable" style titles: keep only the game name.
 		if ( false !== strpos( $name, ' – ' ) ) {
