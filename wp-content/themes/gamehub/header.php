@@ -27,12 +27,12 @@ $gh_archive = get_post_type_archive_link( 'game' );
 	<aside class="gh-sidebar" id="gh-sidebar">
 		<div class="gh-sidebar-head">
 			<a class="gh-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-				<?php if ( has_custom_logo() ) : ?>
-					<?php the_custom_logo(); ?>
+				<?php if ( has_site_icon() ) : ?>
+					<img class="gh-logo-icon" src="<?php echo esc_url( get_site_icon_url( 96 ) ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="36" height="36">
 				<?php else : ?>
 					<span class="gh-logo-mark">🎮</span>
-					<span class="gh-logo-text"><?php bloginfo( 'name' ); ?></span>
 				<?php endif; ?>
+				<span class="gh-logo-text"><?php bloginfo( 'name' ); ?></span>
 			</a>
 			<button class="gh-sidebar-close" type="button" data-gh-sidebar-close aria-label="<?php esc_attr_e( 'Close menu', 'gamehub' ); ?>">✕</button>
 		</div>
@@ -81,7 +81,13 @@ $gh_archive = get_post_type_archive_link( 'game' );
 			<button class="gh-menu-btn" type="button" data-gh-sidebar-open aria-label="<?php esc_attr_e( 'Open menu', 'gamehub' ); ?>">
 				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
 			</button>
-			<a class="gh-topbar-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>"><span class="gh-logo-mark">🎮</span></a>
+			<a class="gh-topbar-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+				<?php if ( has_site_icon() ) : ?>
+					<img class="gh-logo-icon" src="<?php echo esc_url( get_site_icon_url( 64 ) ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="34" height="34">
+				<?php else : ?>
+					<span class="gh-logo-mark">🎮</span>
+				<?php endif; ?>
+			</a>
 
 			<div class="gh-search" data-gh-search>
 				<svg class="gh-search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>

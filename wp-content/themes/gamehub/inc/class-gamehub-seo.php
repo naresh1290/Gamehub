@@ -53,6 +53,9 @@ class GameHub_SEO {
 				return $src[0];
 			}
 		}
+		if ( has_site_icon() ) {
+			return get_site_icon_url( 512 );
+		}
 		return '';
 	}
 
