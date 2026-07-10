@@ -1,6 +1,9 @@
 <?php
 /**
- * Single game: player, actions (like/dislike/rating), related games.
+ * Single game: auto-running player surrounded by one continuous list of 30
+ * related games (same category prioritized, then filled), with a content box
+ * below. Tiles flow densely around and beneath the frame — no separate
+ * sections, no blank space.
  *
  * @package GameHub\Theme
  */
@@ -28,25 +31,69 @@ while ( have_posts() ) :
 			return $t instanceof WP_Term;
 		}
 	);
-	?>
-	<div class="gh-player-wrap">
-		<div class="gh-container">
-			<?php
-			// 30 games surrounding the frame: 10 left, 10 right, 10 below.
-			$around = get_posts(
+
+	// One list of 30 related games — same category prioritized, then filled.
+	$exclude = array( get_the_ID() );
+	$around  = array();
+	if ( $cats ) {
+		$around  = get_posts(
+			array(
+				'post_type'      => 'game',
+				'post_status'    => 'publish',
+				'posts_per_page' => 30,
+				'post__not_in'   => $exclude,
+				'orderby'        => 'rand',
+				'no_found_rows'  => true,
+				'tax_query'      => array(
+					array( 'taxonomy' => 'game_category', 'field' => 'term_id', 'terms' => wp_list_pluck( $cats, 'term_id' ) ),
+				),
+			)
+		);
+		$exclude = array_merge( $exclude, wp_list_pluck( $around, 'ID' ) );
+	}
+	if ( count( $around ) < 30 ) {
+		$around = array_merge(
+			$around,
+			get_posts(
 				array(
 					'post_type'      => 'game',
 					'post_status'    => 'publish',
-					'posts_per_page' => 30,
-					'post__not_in'   => array( get_the_ID() ),
+					'posts_per_page' => 30 - count( $around ),
+					'post__not_in'   => $exclude,
 					'orderby'        => 'rand',
 					'no_found_rows'  => true,
 				)
-			);
-			$s_left  = array_slice( $around, 0, 10 );
-			$s_right = array_slice( $around, 10, 10 );
-			$s_below = array_slice( $around, 20, 10 );
-			?>
+			)
+		);
+	}
+	$around = array_slice( $around, 0, 30 );
+	?>
+	<div class="gh-player-wrap">
+		<div class="gh-container">
+
+			<div class="gh-play-meta">
+				<?php if ( $cats ) : ?>
+					<span class="gh-game-cats">
+						<?php
+						foreach ( $cats as $cat ) :
+							$cat_link = get_term_link( $cat );
+							if ( is_wp_error( $cat_link ) ) {
+								continue;
+							}
+							?>
+							<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+						<?php endforeach; ?>
+					</span>
+				<?php endif; ?>
+				<span class="gh-rating-static" title="<?php echo esc_attr( sprintf( /* translators: like percentage */ __( '%d%% liked', 'gamehub' ), $game['like_ratio'] ) ); ?>">
+					<span class="gh-rating-value"><?php echo $game['rating_count'] > 0 ? '★ ' . esc_html( number_format_i18n( $game['rating'], 1 ) ) : ''; ?></span>
+					<span class="gh-rating-note"><?php if ( $game['rating_count'] > 0 ) : ?>(<span class="gh-vote-total"><?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?></span> <?php esc_html_e( 'votes', 'gamehub' ); ?>)<?php endif; ?></span>
+				</span>
+				<?php if ( $game['plays'] > 0 ) : ?>
+					<span class="gh-rating-note"><?php echo esc_html( gamehub_short_num( $game['plays'] ) ); ?> <?php esc_html_e( 'plays', 'gamehub' ); ?></span>
+				<?php endif; ?>
+			</div>
+
 			<div class="gh-play-top">
 				<div class="gh-play-center">
 					<div class="gh-player"
@@ -61,7 +108,6 @@ while ( have_posts() ) :
 						</div>
 
 						<div class="gh-player-stage">
-							<?php // Mobile launch tile (icon + play → immersive). ?>
 							<div class="gh-player-launch" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Play', 'gamehub' ); ?>"
 								<?php if ( $game['icon'] ) : ?>style="background-image:url('<?php echo esc_url( $game['icon'] ); ?>')"<?php endif; ?>>
 								<span class="gh-play-btn">
@@ -93,50 +139,13 @@ while ( have_posts() ) :
 							</div>
 						</div>
 					</div>
-
-					<div class="gh-player-meta">
-						<?php if ( $cats ) : ?>
-							<span class="gh-game-cats">
-								<?php
-								foreach ( $cats as $cat ) :
-									$cat_link = get_term_link( $cat );
-									if ( is_wp_error( $cat_link ) ) {
-										continue;
-									}
-									?>
-									<a href="<?php echo esc_url( $cat_link ); ?>"><?php echo esc_html( $cat->name ); ?></a>
-								<?php endforeach; ?>
-							</span>
-						<?php endif; ?>
-						<span class="gh-rating-static" title="<?php echo esc_attr( sprintf( /* translators: like percentage */ __( '%d%% liked', 'gamehub' ), $game['like_ratio'] ) ); ?>">
-							<span class="gh-rating-value"><?php echo $game['rating_count'] > 0 ? '★ ' . esc_html( number_format_i18n( $game['rating'], 1 ) ) : ''; ?></span>
-							<span class="gh-rating-note"><?php if ( $game['rating_count'] > 0 ) : ?>(<span class="gh-vote-total"><?php echo esc_html( gamehub_short_num( $game['rating_count'] ) ); ?></span> <?php esc_html_e( 'votes', 'gamehub' ); ?>)<?php endif; ?></span>
-						</span>
-						<?php if ( $game['plays'] > 0 ) : ?>
-							<span class="gh-rating-note"><?php echo esc_html( gamehub_short_num( $game['plays'] ) ); ?> <?php esc_html_e( 'plays', 'gamehub' ); ?></span>
-						<?php endif; ?>
-					</div>
 				</div>
 
-				<div class="gh-side gh-side-left" aria-hidden="true">
-					<?php foreach ( $s_left as $rg ) { gamehub_card( $rg ); } ?>
-				</div>
-				<div class="gh-side gh-side-right" aria-hidden="true">
-					<?php foreach ( $s_right as $rg ) { gamehub_card( $rg ); } ?>
-				</div>
+				<?php foreach ( $around as $rg ) { gamehub_card( $rg ); } ?>
 			</div>
 
-			<?php if ( $s_below ) : ?>
-				<section class="gh-section">
-					<div class="gh-section-head"><h2><?php esc_html_e( 'More games', 'gamehub' ); ?></h2></div>
-					<div class="gh-grid">
-						<?php foreach ( $s_below as $rg ) { gamehub_card( $rg ); } ?>
-					</div>
-				</section>
-			<?php endif; ?>
-
 			<?php
-			// Content box below "More games".
+			// Content box below the game grid.
 			$content = get_the_content();
 			if ( trim( wp_strip_all_tags( $content ) ) ) :
 				?>
