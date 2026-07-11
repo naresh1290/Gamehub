@@ -3,7 +3,7 @@
  * Plugin Name:       GameHub Engine
  * Plugin URI:        https://github.com/OWNER/gamehub-engine
  * Description:        Games data engine: registers the Game post type and category taxonomy, imports games from a remote JSON URL, tracks plays/visits/likes/ratings/session-time, and exposes a REST API. Powers the GameHub theme and GameHub Analytics.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            GameHub
  * License:           GPL-2.0-or-later
  * Text Domain:       gamehub-engine
@@ -17,7 +17,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GHUB_ENGINE_VERSION', '1.0.3' );
+/*
+ * HTTPS detection behind Cloudflare / a reverse proxy.
+ *
+ * When a site is served over HTTPS at the edge (Cloudflare) but reaches the
+ * origin over HTTP, WordPress thinks it is HTTP and generates http:// URLs for
+ * scripts, the REST API and admin-ajax. On the HTTPS page the browser then
+ * blocks those as mixed content, which silently breaks likes/dislikes,
+ * analytics beacons and the AI generator. Forcing HTTPS on when the proxy says
+ * so makes home_url()/rest_url()/admin_url() emit https and keeps things
+ * working even before a site is fully provisioned. Only triggers on an explicit
+ * proxy signal, so http-only sites are unaffected.
+ */
+if ( ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] )
+	|| ( isset( $_SERVER['HTTP_CF_VISITOR'] ) && false !== strpos( $_SERVER['HTTP_CF_VISITOR'], 'https' ) ) ) {
+	$_SERVER['HTTPS'] = 'on';
+}
+
+define( 'GHUB_ENGINE_VERSION', '1.0.4' );
 define( 'GHUB_ENGINE_FILE', __FILE__ );
 define( 'GHUB_ENGINE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GHUB_ENGINE_URL', plugin_dir_url( __FILE__ ) );
