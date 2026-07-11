@@ -3,7 +3,7 @@
  * Plugin Name:       GameHub Engine
  * Plugin URI:        https://github.com/OWNER/gamehub-engine
  * Description:        Games data engine: registers the Game post type and category taxonomy, imports games from a remote JSON URL, tracks plays/visits/likes/ratings/session-time, and exposes a REST API. Powers the GameHub theme and GameHub Analytics.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Author:            GameHub
  * License:           GPL-2.0-or-later
  * Text Domain:       gamehub-engine
@@ -34,7 +34,7 @@ if ( ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === $_SERVER['HTTP
 	$_SERVER['HTTPS'] = 'on';
 }
 
-define( 'GHUB_ENGINE_VERSION', '1.0.4' );
+define( 'GHUB_ENGINE_VERSION', '1.0.5' );
 define( 'GHUB_ENGINE_FILE', __FILE__ );
 define( 'GHUB_ENGINE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GHUB_ENGINE_URL', plugin_dir_url( __FILE__ ) );

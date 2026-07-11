@@ -45,10 +45,11 @@ class GameHub_Settings {
 			'per_page'        => 60,
 			// Playable proxy (blank = embed URLs directly, no proxying).
 			'proxy_origin'    => '',
-			// Icon image reverse proxy (serve CDN icons via this domain).
-			// On by default so a fresh install works once the nginx /img/ snippet
-			// is in place; icon_cdn_host is the CDN the feed's icons live on.
-			'icon_proxy'      => 1,
+			// Icon images. By default icons load directly from the CDN host below
+			// (no server setup needed — works the moment the plugin is active).
+			// Turn on icon_proxy to instead serve them through this domain, which
+			// additionally requires the nginx /img/ snippet (deploy/install-img-proxy.sh).
+			'icon_proxy'      => 0,
 			'icon_cdn_host'   => 'img.poki-cdn.com',
 			'icon_proxy_path' => 'img',
 			// Branding.
@@ -329,18 +330,21 @@ class GameHub_Settings {
 					</tr>
 				</table>
 
-				<h2 class="title"><?php esc_html_e( 'Icon image proxy', 'gamehub-engine' ); ?></h2>
+				<h2 class="title"><?php esc_html_e( 'Icon images', 'gamehub-engine' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Enable proxy', 'gamehub-engine' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Serve through domain', 'gamehub-engine' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[icon_proxy]" value="1" <?php checked( $s['icon_proxy'], 1 ); ?>> <?php esc_html_e( 'Serve game icons through this domain instead of the CDN', 'gamehub-engine' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Requires a matching nginx reverse-proxy location on the server (see the deploy/nginx snippet).', 'gamehub-engine' ); ?></p>
+							<label><input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[icon_proxy]" value="1" <?php checked( $s['icon_proxy'], 1 ); ?>> <?php esc_html_e( 'Serve game icons through this domain instead of directly from the CDN', 'gamehub-engine' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Off (default): icons load straight from the CDN host below — no server setup needed. On: icons are served from this domain, which also requires the nginx /img/ snippet (deploy/install-img-proxy.sh).', 'gamehub-engine' ); ?></p>
 						</td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="ghub_icon_host"><?php esc_html_e( 'CDN host', 'gamehub-engine' ); ?></label></th>
-						<td><input type="text" id="ghub_icon_host" class="regular-text code" name="<?php echo esc_attr( self::OPTION ); ?>[icon_cdn_host]" value="<?php echo esc_attr( $s['icon_cdn_host'] ); ?>" placeholder="img.poki-cdn.com"></td>
+						<td>
+							<input type="text" id="ghub_icon_host" class="regular-text code" name="<?php echo esc_attr( self::OPTION ); ?>[icon_cdn_host]" value="<?php echo esc_attr( $s['icon_cdn_host'] ); ?>" placeholder="img.poki-cdn.com">
+							<p class="description"><?php esc_html_e( 'The CDN your feed’s icons live on. Used for both modes.', 'gamehub-engine' ); ?></p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="ghub_icon_path"><?php esc_html_e( 'Local path', 'gamehub-engine' ); ?></label></th>
