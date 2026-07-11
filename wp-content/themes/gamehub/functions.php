@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.4.9' );
+define( 'GAMEHUB_THEME_VERSION', '1.5.0' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.
@@ -127,6 +127,33 @@ function gamehub_install_pages() {
 			update_option( 'wp_page_for_privacy_policy', $id );
 		}
 	}
+}
+
+/**
+ * Remove the default "Uncategorized" post category on theme activation. A
+ * games site uses the `game_category` taxonomy, so the default blog category is
+ * just clutter. Only removed when empty, and the site default is cleared first
+ * (WordPress refuses to delete the category that is set as the default).
+ */
+add_action( 'after_switch_theme', 'gamehub_remove_default_category' );
+
+function gamehub_remove_default_category() {
+	if ( ! taxonomy_exists( 'category' ) ) {
+		return;
+	}
+
+	$default_id = (int) get_option( 'default_category' );
+	$term       = $default_id ? get_term( $default_id, 'category' ) : get_term_by( 'slug', 'uncategorized', 'category' );
+
+	if ( ! $term || is_wp_error( $term ) || (int) $term->count > 0 ) {
+		return;
+	}
+
+	if ( (int) get_option( 'default_category' ) === (int) $term->term_id ) {
+		update_option( 'default_category', 0 );
+	}
+
+	wp_delete_term( (int) $term->term_id, 'category' );
 }
 
 /* Assets --------------------------------------------------------------- */
