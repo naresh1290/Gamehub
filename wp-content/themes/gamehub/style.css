@@ -2,7 +2,7 @@
 Theme Name:  GameHub
 Theme URI:   https://github.com/naresh1290/Gamehub
 Description: A dynamic, white-label games-portal theme with a CrazyGames/Poki-style sidebar layout, instant search, category pages, single-game player, and an HTML sitemap — powered by the GameHub Engine plugin.
-Version:     1.5.0
+Version:     1.5.1
 Author:      GameHub
 License:     GPL-2.0-or-later
 Text Domain: gamehub
@@ -191,11 +191,14 @@ body.home .gh-section-head { margin-bottom: 10px; }
 .gh-play-center .gh-player { height: 100%; aspect-ratio: auto; }
 @media (min-width: 1025px) {
 	.gh-play-top { grid-template-columns: repeat(9, 1fr); }
-	.gh-play-center { grid-column: 2 / span 7; grid-row: 1 / span 4; aspect-ratio: auto; }
+	/* Keep the player a true 16:9 regardless of how many surrounding tiles the
+	   grid has — align-self:start stops it stretching to fill collapsed rows
+	   when there are few related games (which otherwise letterboxes it). */
+	.gh-play-center { grid-column: 2 / span 7; grid-row: 1 / span 4; aspect-ratio: 16 / 9; align-self: start; }
 }
 @media (min-width: 1300px) {
 	.gh-play-top { grid-template-columns: repeat(11, 1fr); }
-	.gh-play-center { grid-column: 3 / span 7; grid-row: 1 / span 4; aspect-ratio: auto; }
+	.gh-play-center { grid-column: 3 / span 7; grid-row: 1 / span 4; aspect-ratio: 16 / 9; align-self: start; }
 }
 .gh-game-head { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .gh-game-head img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; }
