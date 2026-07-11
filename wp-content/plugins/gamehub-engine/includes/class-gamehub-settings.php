@@ -46,9 +46,10 @@ class GameHub_Settings {
 			// Playable proxy (blank = embed URLs directly, no proxying).
 			'proxy_origin'    => '',
 			// Icon image reverse proxy (serve CDN icons via this domain).
-			// icon_cdn_host is per-site — set it to the CDN your feed's icons live on.
-			'icon_proxy'      => 0,
-			'icon_cdn_host'   => '',
+			// On by default so a fresh install works once the nginx /img/ snippet
+			// is in place; icon_cdn_host is the CDN the feed's icons live on.
+			'icon_proxy'      => 1,
+			'icon_cdn_host'   => 'img.poki-cdn.com',
 			'icon_proxy_path' => 'img',
 			// Branding.
 			'site_tagline'    => '',
