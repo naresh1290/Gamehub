@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GAMEHUB_THEME_VERSION', '1.4.7' );
+define( 'GAMEHUB_THEME_VERSION', '1.4.9' );
 
 /**
  * True when the GameHub Engine plugin is active and exposing its API.
@@ -34,6 +34,100 @@ add_action(
 		register_nav_menus( array( 'footer' => __( 'Footer Menu', 'gamehub' ) ) );
 	}
 );
+
+/* Edit static pages with the Classic Editor (like the engine does for games). */
+add_filter(
+	'use_block_editor_for_post_type',
+	function ( $use, $post_type ) {
+		return 'page' === $post_type ? false : $use;
+	},
+	10,
+	2
+);
+
+/* Default utility pages ------------------------------------------------- */
+/**
+ * Create About, Contact, Privacy Policy and Terms pages on theme activation,
+ * linked automatically in the sidebar footer. Existing pages (matched by
+ * slug) are left untouched so edits are never overwritten.
+ */
+add_action( 'after_switch_theme', 'gamehub_install_pages' );
+
+function gamehub_install_pages() {
+	$site   = get_bloginfo( 'name' );
+	$host   = wp_parse_url( home_url(), PHP_URL_HOST );
+	$mail   = 'hello@' . ( $host ? preg_replace( '/^www\./', '', $host ) : 'example.com' );
+
+	$about = sprintf(
+		"<p>Welcome to %s — your home for free online games you can play instantly in your browser, with no downloads and no installs.</p>\n<p>We bring together hundreds of games across every category, from action and puzzles to sports, racing and adventure, all in one place. New games are added regularly, so there is always something fresh to play.</p>\n<p>Have feedback or a suggestion? Head over to our <a href=\"%s\">Contact</a> page — we would love to hear from you.</p>",
+		esc_html( $site ),
+		esc_url( home_url( '/contact/' ) )
+	);
+
+	$contact = sprintf(
+		"<p>We would love to hear from you. Whether it is feedback, a game suggestion, a business enquiry, or a question about %s, get in touch and we will get back to you as soon as we can.</p>\n<p><strong>Email:</strong> %s</p>\n<p><em>Replace this text with your preferred contact details or embed a contact form.</em></p>",
+		esc_html( $site ),
+		esc_html( $mail )
+	);
+
+	$privacy = sprintf(
+		"<p>This Privacy Policy explains how %s collects, uses and protects any information you provide when you use this website.</p>\n<h2>Information We Collect</h2>\n<p>We may collect anonymous usage data such as the games you play and general analytics to improve the site. We do not require you to create an account to play.</p>\n<h2>Cookies</h2>\n<p>We use cookies and similar technologies to remember your preferences and to measure how the site is used.</p>\n<h2>Third-Party Content</h2>\n<p>Games are embedded from third-party providers who may set their own cookies. Please review their policies for details.</p>\n<h2>Contact</h2>\n<p>Questions about this policy? Reach us at %s.</p>\n<p><em>This is a starter template — please review and adapt it to your legal requirements.</em></p>",
+		esc_html( $site ),
+		esc_html( $mail )
+	);
+
+	$terms = sprintf(
+		"<p>By accessing and using %s, you agree to the following terms. Please read them carefully.</p>\n<h2>Use of the Site</h2>\n<p>The games and content on this site are provided for personal, non-commercial entertainment. You agree not to misuse the site or interfere with its normal operation.</p>\n<h2>Intellectual Property</h2>\n<p>Games are the property of their respective owners and are embedded here under the terms permitted by their providers.</p>\n<h2>Disclaimer</h2>\n<p>The site is provided \"as is\" without warranties of any kind. We are not responsible for the content or availability of third-party games.</p>\n<h2>Changes</h2>\n<p>We may update these terms from time to time. Continued use of the site means you accept any changes.</p>\n<p><em>This is a starter template — please review and adapt it to your legal requirements.</em></p>",
+		esc_html( $site )
+	);
+
+	$pages = array(
+		array( 'slug' => 'about', 'title' => __( 'About', 'gamehub' ), 'order' => 1, 'content' => $about ),
+		array( 'slug' => 'contact', 'title' => __( 'Contact', 'gamehub' ), 'order' => 2, 'content' => $contact ),
+		array( 'slug' => 'privacy-policy', 'title' => __( 'Privacy Policy', 'gamehub' ), 'order' => 3, 'content' => $privacy ),
+		array( 'slug' => 'terms', 'title' => __( 'Terms', 'gamehub' ), 'order' => 4, 'content' => $terms ),
+	);
+
+	foreach ( $pages as $p ) {
+		$existing = get_page_by_path( $p['slug'] );
+		if ( $existing ) {
+			// Make sure a pre-existing (often draft) page is live and ordered
+			// consistently in the footer — without touching its content.
+			$fix = array();
+			if ( 'publish' !== $existing->post_status ) {
+				$fix['post_status'] = 'publish';
+			}
+			if ( (int) $existing->menu_order !== $p['order'] ) {
+				$fix['menu_order'] = $p['order'];
+			}
+			if ( $fix ) {
+				$fix['ID'] = $existing->ID;
+				wp_update_post( $fix );
+			}
+			if ( 'privacy-policy' === $p['slug'] ) {
+				update_option( 'wp_page_for_privacy_policy', $existing->ID );
+			}
+			continue;
+		}
+
+		$id = wp_insert_post(
+			array(
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_title'   => $p['title'],
+				'post_name'    => $p['slug'],
+				'post_content' => $p['content'],
+				'menu_order'   => $p['order'],
+				'comment_status' => 'closed',
+				'ping_status'  => 'closed',
+			)
+		);
+
+		if ( 'privacy-policy' === $p['slug'] && $id && ! is_wp_error( $id ) ) {
+			update_option( 'wp_page_for_privacy_policy', $id );
+		}
+	}
+}
 
 /* Assets --------------------------------------------------------------- */
 add_action(
